@@ -1,0 +1,13 @@
+name|type|data|command|depend|seed|path|time|size|bytes|format|repository|iteration|parent|children|seconds|warnings|error
+pw|stem|c004d56cab4ad004|27e4d6e31d138f35|2c530c1562a7fbd1|-1536787549|movebankCredentials/pw.Rda|t18907.7359670883s|s96b|96|file|local|vector|||12||
+loginObject|stem|e4075cacaddd6002|09276ad0d9744a86|c41411cb35a9bc5c|-1147792597||t20223.9565035038s|s248b|248|rds|local|vector|||0.016||
+.Random.seed|object|202bf19284987d4a
+max_date|stem|47a63891fbd1f177|9070afec66c3842b|2c530c1562a7fbd1|2114818810||t20229.7262352358s|s81b|81|rds|local|vector|||10.094||
+min_date|stem|cd65cc2b5515a1a0|651aed199f035206|2c530c1562a7fbd1|1906631837||t20229.7262365054s|s80b|80|rds|local|vector|||0||
+ww_file|stem|321be17e19ae726c|d49d7859b2887b5f|2c530c1562a7fbd1|-814932461|data/raw/whoswho_vultures_20250422_new_kg.xlsx|t20229.7655283036s|s481986b|481986|file|local|vector|||6.406||
+ww|stem|1fd67d676a8c608b|5a07253e3429dffc|2a2970cbd06ce48e|988165022||t20472.7836852811s|s46588b|46588|rds|local|vector|||2.5|There were 3 warnings in `mutate()`. The first warning was: i In argument: `across(all_of(date_cols), ~as.Date(as.numeric(.x), origin =   '1899-12-30'))`. Caused by warning in `as.Date()`: ! NAs introduced by coercion i Run `dplyr::last_dplyr_warnings()` to see the 2 remaining warnings.|
+deaths|stem|1cf638a97bc24f3d|44ccfe5f82e48036|39dfefbc55f8e62e|1071825309||t20472.783686939s|s7300b|7300|rds|local|vector|||0.016||
+get_ww|function|f16ceabcfa33c5cd
+get_loginObject|function|3d0444bbc27ce24f
+get_deaths|function|42bd7bbbd6db88ea
+mm|stem|5fc7fca7de1784b9|bff2be865a69c570|2c530c1562a7fbd1|674723417||t20472.7847451238s|s23467b|23467|rds|local|vector|||6.672||
