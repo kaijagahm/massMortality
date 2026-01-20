@@ -337,10 +337,17 @@ cluster22 <- mm_sub_recent %>% filter(year_cluster_eps5min2 == 2 & year == 2022)
 cluster21 # this is the kina valley mass poisoning
 View(cluster21) # sure enough, all of the individuals involved in this event died by poisoning
 range(cluster21$date) # all the same day, 10/24
-cluster21_before <- min(cluster21$date)-days(7)
-cluster21_after <- max(cluster21$date)+days(7)
+cluster21_before_dates <- c(min(cluster21$date)-days(14), min(cluster21$date)-days(7))
+cluster21_after_dates <- c(max(cluster21$date)+days(7), max(cluster21$date)+days(14))
+cluster21dates <- list(cluster21_before_dates, cluster21_after_dates)
 
 cluster22 # this is also probably a mass poisoning? COM is gout and it's all in the same area, large crater
 View(cluster22) # and yes, sure enough, cause of death for all of them is poisoning.
+cluster22_before_dates <- c(min(cluster22$date)-days(14), min(cluster22$date)-days(7))
+cluster22_after_dates <- c(max(cluster22$date)+days(7), max(cluster22$date)+days(14))
+cluster22dates <- list(cluster22_before_dates, cluster22_after_dates)
+
+write_rds(cluster21dates, file = "data/created/cluster21dates.RDS")
+write_rds(cluster22dates, file = "data/created/cluster22dates.RDS")
 
 # Next step is to grab the cleaned data. This might get annoying; we'll see. I'm going to copy the data infrastructure straight from arrivalatcarcasses.
