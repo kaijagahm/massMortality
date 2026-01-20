@@ -324,6 +324,7 @@ mm_sub_recent %>%
     vjust = -1, size = 3)+
   NULL
 
+write_rds(mm_sub_recent, file = here("data/created/mm_sub_recent.RDS"))
 
 # Okay, now it's time to investigate a single poisoning event/clustered mortality event.
 

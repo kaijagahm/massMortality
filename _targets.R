@@ -51,7 +51,7 @@ list(
   ## Clean the data with the various steps in the vultureUtils::cleanData function
   tar_target(cleaned_2021, clean_data(removed_deploy_2021)),
   tar_target(cleaned_2022, clean_data(removed_deploy_2022)),
-  tar_target(cleaned, st_as_sf(bind_rows(cleaned_2021, cleaned_2022))),
+  tar_target(cleaned, st_as_sf(bind_rows(cleaned_2021, cleaned_2022), remove = F)),
   
-  tar_target(downsampled, mutate(sf::st_transform(sf::st_as_sf(downsample_10min(cleaned), coords = c("location_long", "location_lat"), crs = "WGS84"), 32636), timestamp_il = lubridate::with_tz(timestamp, tzone = "Israel"), date_il = lubridate::date(timestamp_il)))
+  tar_target(downsampled, mutate(sf::st_transform(sf::st_as_sf(downsample_10min(cleaned), coords = c("location_long", "location_lat"), crs = "WGS84", remove = F), 32636), timestamp_il = lubridate::with_tz(timestamp, tzone = "Israel"), date_il = lubridate::date(timestamp_il)))
 )

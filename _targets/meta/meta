@@ -24,7 +24,7 @@ removed_deploy_2021|stem|a03a545304153afe|0a8624c41484453e|bea4035c1af091a5|1921
 removed_deploy_2022|stem|8a9336b827dd60b9|877ba82900b2711a|a6f17bf9477e7868|1937637083||t20472.9931813684s|s5116978b|5116978|rds|local|vector|||4.188|There were 2 warnings in `mutate()`. The first warning was: i In argument: `across(c('deploy_on_date', 'deploy_off_date'), as.numeric)`. Caused by warning: ! NAs introduced by coercion i Run `dplyr::last_dplyr_warnings()` to see the 1 remaining warning.|
 cleaned_2021|stem|e8264497793a32aa|d08bbffd9c70ad98|31c17c260c4070fa|-476990209||t20472.9974110939s|s6859772b|6859772|rds|local|vector|||11.062||
 cleaned_2022|stem|1f4afdec62c3a77c|ef193a4ee24de43c|314dd2b2bbb9bbd5|2128561755||t20472.9976100808s|s7990261b|7990261|rds|local|vector|||10.688||
-cleaned|stem|208389498e631dd4|5632afa5e907e814|5b11fec4a0f865fe|-863814015||t20472.9999930054s|s14778168b|14778168|rds|local|vector|||1.25||
+cleaned|stem|208389498e631dd4|13dd07be64a0f079|5b11fec4a0f865fe|-863814015||t20473.0163746164s|s14778168b|14778168|rds|local|vector|||1.157||
 get_ww|function|f16ceabcfa33c5cd
 clean_data|function|ba7d1611ac4d4dfa
 process_deployments|function|51f0b90aedea8c6e
@@ -32,4 +32,4 @@ downsample_10min|function|80739bfa691aaa7b
 get_loginObject|function|3d0444bbc27ce24f
 get_deaths|function|42bd7bbbd6db88ea
 fix_names_ages|function|3077fd73cdf890d4
-downsampled|stem|5c4e51cee73e14bb|50dcaa9b61efd494|4d8ad0c1c0a482f3|-1777741541||t20473.0006745588s|s11224749b|11224749|rds|local|vector|||17.937||
+downsampled|stem|74843a1743e63e01|84cc9f1078bbea5c|4d8ad0c1c0a482f3|-1777741541||t20473.0168189763s|s13286883b|13286883|rds|local|vector|||18.016||
