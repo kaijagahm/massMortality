@@ -53,5 +53,10 @@ list(
   tar_target(cleaned_2022, clean_data(removed_deploy_2022)),
   tar_target(cleaned, st_as_sf(bind_rows(cleaned_2021, cleaned_2022), remove = F)),
   
-  tar_target(downsampled, mutate(sf::st_transform(sf::st_as_sf(downsample_10min(cleaned), coords = c("location_long", "location_lat"), crs = "WGS84", remove = F), 32636), timestamp_il = lubridate::with_tz(timestamp, tzone = "Israel"), date_il = lubridate::date(timestamp_il)))
+  tar_target(downsampled, mutate(sf::st_transform(sf::st_as_sf(downsample_10min(cleaned), coords = c("location_long", "location_lat"), crs = "WGS84", remove = F), 32636), timestamp_il = lubridate::with_tz(timestamp, tzone = "Israel"), date_il = lubridate::date(timestamp_il))),
+  tar_target(bbox_south_big, sf::st_transform(
+    st_as_sfc(st_set_crs(st_bbox(c("xmin" = 34.205, "xmax" = 35.787,
+                                   "ymin" = 29.478, "ymax" = 31.775)), 
+                         "WGS84")), 32636)),
+  tar_target(downsampled_masked, st_crop(downsampled, bbox_south_big))
 )
