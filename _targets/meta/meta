@@ -1,31 +1,30 @@
 name|type|data|command|depend|seed|path|time|size|bytes|format|repository|iteration|parent|children|seconds|warnings|error
 pw|stem|c004d56cab4ad004|27e4d6e31d138f35|2c530c1562a7fbd1|-1536787549|movebankCredentials/pw.Rda|t18907.7359670883s|s96b|96|file|local|vector|||12||
 loginObject|stem|e4075cacaddd6002|09276ad0d9744a86|c41411cb35a9bc5c|-1147792597||t20223.9565035038s|s248b|248|rds|local|vector|||0.016||
-.Random.seed|object|202bf19284987d4a
+.Random.seed|object|202bf19284987d4a|||||||||||||||
 max_date|stem|47a63891fbd1f177|9070afec66c3842b|2c530c1562a7fbd1|2114818810||t20229.7262352358s|s81b|81|rds|local|vector|||10.094||
 min_date|stem|cd65cc2b5515a1a0|651aed199f035206|2c530c1562a7fbd1|1906631837||t20229.7262365054s|s80b|80|rds|local|vector|||0||
 ww_file|stem|321be17e19ae726c|d49d7859b2887b5f|2c530c1562a7fbd1|-814932461|data/raw/whoswho_vultures_20250422_new_kg.xlsx|t20229.7655283036s|s481986b|481986|file|local|vector|||6.406||
 ww|stem|1fd67d676a8c608b|5a07253e3429dffc|2a2970cbd06ce48e|988165022||t20472.7836852811s|s46588b|46588|rds|local|vector|||2.5|There were 3 warnings in `mutate()`. The first warning was: i In argument: `across(all_of(date_cols), ~as.Date(as.numeric(.x), origin =   '1899-12-30'))`. Caused by warning in `as.Date()`: ! NAs introduced by coercion i Run `dplyr::last_dplyr_warnings()` to see the 2 remaining warnings.|
 deaths|stem|1cf638a97bc24f3d|44ccfe5f82e48036|39dfefbc55f8e62e|1071825309||t20472.783686939s|s7300b|7300|rds|local|vector|||0.016||
 mm|stem|5fc7fca7de1784b9|bff2be865a69c570|2c530c1562a7fbd1|674723417||t20472.7847451238s|s23467b|23467|rds|local|vector|||6.672||
-inpa_data_2021|stem|a9b8633b00079a08|3b8b531defd5b1d9|2c530c1562a7fbd1|735273577||t20472.9841274764s|s823402b|823402|rds|local|vector|||1.39||
-ornitela_data_2021|stem|09e360dd70f9404c|47d0d22d6a729f76|2c530c1562a7fbd1|727441808||t20472.9841557992s|s2549672b|2549672|rds|local|vector|||0.578||
-inpa_data_2022|stem|e9b8f9b68ef04d1a|ece94d0f3ab1f334|2c530c1562a7fbd1|-1210581480||t20472.9841721365s|s1033222b|1033222|rds|local|vector|||0.281||
-ornitela_data_2022|stem|29659a47bedb31fa|7465d30e93e81c76|2c530c1562a7fbd1|1584165961||t20472.98420521s|s2949762b|2949762|rds|local|vector|||0.75||
-gps_2021_1|stem|f99a551bfcfe544e|1e29a9b390cd27fc|06848f578eabcb20|1794074390||t20472.9858842419s|s3338811b|3338811|rds|local|vector|||0.609||
-gps_2022_1|stem|9725975fbe8cb2eb|29dd7a42d113f454|c36533aea3700c8d|2037924079||t20472.9859315918s|s3946560b|3946560|rds|local|vector|||0.64||
-gps_2021|stem|ae3073a090aaceaf|add8d3927e0dd0ca|0207b1c6c39ecd78|1631219601||t20472.9859752422s|s4298654b|4298654|rds|local|vector|||0.046||
-gps_2022|stem|55bf31ea5ad31b61|0afcb6fd710ae9ea|b11abd4851f19892|-369333788||t20472.986030065s|s5075748b|5075748|rds|local|vector|||0.125||
 ww_file_new|stem|744c7fb0370f4f69|2dac7eb5ccca7866|2c530c1562a7fbd1|-1857894588|data/raw/whoswho_vultures_20251201_new.xlsx|t20472.7822969876s|s482446b|482446|file|local|vector|||0.954||
-gps_2021_fixed|stem|3dba4853ce684db9|80f1dee73dc91727|956ab746d012e963|-260356718||t20472.9911568489s|s4322507b|4322507|rds|local|vector|||3.031||
-gps_2022_fixed|stem|78396532bd10a3c9|153f7a0866b85ad9|8895fea795169eef|1489096501||t20472.9912526514s|s5102731b|5102731|rds|local|vector|||3.203||
 ww_new|stem|9c8cb54ccc51b375|80cd4c25fe890f52|43104af06dc1f52c|-2027726717||t20472.9928104601s|s48424b|48424|rds|local|vector|||2.469||
-removed_deploy_2021|stem|a03a545304153afe|0a8624c41484453e|bea4035c1af091a5|1921358013||t20472.9930768256s|s4326085b|4326085|rds|local|vector|||4.421|There were 2 warnings in `mutate()`. The first warning was: i In argument: `across(c('deploy_on_date', 'deploy_off_date'), as.numeric)`. Caused by warning: ! NAs introduced by coercion i Run `dplyr::last_dplyr_warnings()` to see the 1 remaining warning.|
-removed_deploy_2022|stem|8a9336b827dd60b9|877ba82900b2711a|a6f17bf9477e7868|1937637083||t20472.9931813684s|s5116978b|5116978|rds|local|vector|||4.188|There were 2 warnings in `mutate()`. The first warning was: i In argument: `across(c('deploy_on_date', 'deploy_off_date'), as.numeric)`. Caused by warning: ! NAs introduced by coercion i Run `dplyr::last_dplyr_warnings()` to see the 1 remaining warning.|
-cleaned_2021|stem|e8264497793a32aa|d08bbffd9c70ad98|31c17c260c4070fa|-476990209||t20472.9974110939s|s6859772b|6859772|rds|local|vector|||11.062||
-cleaned_2022|stem|1f4afdec62c3a77c|ef193a4ee24de43c|314dd2b2bbb9bbd5|2128561755||t20472.9976100808s|s7990261b|7990261|rds|local|vector|||10.688||
-cleaned|stem|208389498e631dd4|13dd07be64a0f079|5b11fec4a0f865fe|-863814015||t20473.0163746164s|s14778168b|14778168|rds|local|vector|||1.157||
-downsampled|stem|74843a1743e63e01|84cc9f1078bbea5c|4d8ad0c1c0a482f3|-1777741541||t20473.0168189763s|s13286883b|13286883|rds|local|vector|||18.016||
+bbox_south_big|stem|e0e935b0e872b75b|bf5c509ea4a74374|2c530c1562a7fbd1|-1748307047||t20473.9065968435s|s1133b|1133|rds|local|vector|||1.25||
+cleaned|stem|98ffaf300706062d|13dd07be64a0f079|0de8f80cfe82ea1c|-863814015||t20474.8866722779s|s36669226b|36669226|rds|local|vector|||1.469||
+downsampled|stem|fe0d243cef249a69|84cc9f1078bbea5c|c510f89ebd70424b|-1777741541||t20474.8873424948s|s33491941b|33491941|rds|local|vector|||38.922||
+downsampled_masked|stem|ade35412f6abb308|5783b3ebb342f2f4|a515f2edb72a5f2f|-710076677||t20474.8875609947s|s20675979b|20675979|rds|local|vector|||5.859|attribute variables are assumed to be spatially constant throughout all geometries|
+gps_2021_1|stem|df1e69d3f79dc000|1e29a9b390cd27fc|3bf685e2aed2c2ee|1794074390||t20474.9454482049s|s11736644b|11736644|rds|local|vector|||1.875||
+gps_2021|stem|95337a7c3c2f03b6|add8d3927e0dd0ca|8ff1eb45655469cb|1631219601||t20474.9456725487s|s15083473b|15083473|rds|local|vector|||0.516||
+gps_2021_fixed|stem|21bfd2e90d74b06e|80f1dee73dc91727|2efbee2459bdf30a|-260356718||t20474.9459556074s|s15150821b|15150821|rds|local|vector|||3.954||
+removed_deploy_2021|stem|1aa5d1509aa9de85|0a8624c41484453e|21b6432422a12c80|1921358013||t20474.946304228s|s15173713b|15173713|rds|local|vector|||6.219|There were 2 warnings in `mutate()`. The first warning was: i In argument: `across(c('deploy_on_date', 'deploy_off_date'), as.numeric)`. Caused by warning: ! NAs introduced by coercion i Run `dplyr::last_dplyr_warnings()` to see the 1 remaining warning.|
+cleaned_2021|stem|35c9d42c00ede791|d08bbffd9c70ad98|58e98bb7c6978c25|-476990209||t20474.9470037563s|s23664850b|23664850|rds|local|vector|||31.485||
+downsampled_2021|stem|8f411c4d64511e57|1963c30db408396a|4a3c1ae219165c23|330131408||t20474.9476883532s|s21172228b|21172228|rds|local|vector|||18.141||
+downsampled_masked_2021|stem|e6fa0efb3ad18161|cb460a139787b260|d33a600c0ff81915|-732155395||t20474.9480804314s|s14080685b|14080685|rds|local|vector|||4.265|attribute variables are assumed to be spatially constant throughout all geometries|
+gps_2022_1|stem|b336c8023a06db07|29dd7a42d113f454|5efa646a8d076f7d|2037924079||t20474.9547694526s|s14255755b|14255755|rds|local|vector|||2.234||
+gps_2022|stem|97e04dbf9b713aca|0afcb6fd710ae9ea|23f80346d6634595|-369333788||t20474.9549487806s|s18247286b|18247286|rds|local|vector|||0.141||
+gps_2022_fixed|stem|16a3b9ddfa79cee1|153f7a0866b85ad9|5db32d88a28aa2a6|1489096501||t20474.9551736137s|s18324624b|18324624|rds|local|vector|||4.125||
+removed_deploy_2022|stem|e6296ae2b3040ed3|877ba82900b2711a|b9e69e4275a82821|1937637083||t20474.9554426429s|s18347632b|18347632|rds|local|vector|||7.047|There were 2 warnings in `mutate()`. The first warning was: i In argument: `across(c('deploy_on_date', 'deploy_off_date'), as.numeric)`. Caused by warning: ! NAs introduced by coercion i Run `dplyr::last_dplyr_warnings()` to see the 1 remaining warning.|
 get_ww|function|f16ceabcfa33c5cd
 clean_data|function|ba7d1611ac4d4dfa
 process_deployments|function|51f0b90aedea8c6e
@@ -33,5 +32,10 @@ downsample_10min|function|80739bfa691aaa7b
 get_loginObject|function|3d0444bbc27ce24f
 get_deaths|function|42bd7bbbd6db88ea
 fix_names_ages|function|3077fd73cdf890d4
-bbox_south_big|stem|e0e935b0e872b75b|bf5c509ea4a74374|2c530c1562a7fbd1|-1748307047||t20473.9065968435s|s1133b|1133|rds|local|vector|||1.25||
-downsampled_masked|stem|c456c52b645825bc|5783b3ebb342f2f4|00c695147261ae85|-710076677||t20473.9067271258s|s9329654b|9329654|rds|local|vector|||3.547|attribute variables are assumed to be spatially constant throughout all geometries|
+inpa_data_2021|stem|d602bbb6a2914256|3abd9fbcec229085|2c530c1562a7fbd1|735273577||t20474.9591236221s|s3273060b|3273060|rds|local|vector|||2.032||
+inpa_data_2022|stem|0dd4b37b60817d9a|5e26aadb1c800a2e|2c530c1562a7fbd1|-1210581480||t20474.959164327s|s3847745b|3847745|rds|local|vector|||1.015||
+ornitela_data_2021|stem|d4816a14dd80db7b|6e76a73213f2d4f4|2c530c1562a7fbd1|727441808||t20474.9592548593s|s8506464b|8506464|rds|local|vector|||2.328||
+ornitela_data_2022|stem|36023306bdb540d6|db849ce7ef582430|2c530c1562a7fbd1|1584165961||t20474.9593620509s|s10443499b|10443499|rds|local|vector|||2.468||
+cleaned_2022|stem|badfa8d9ff746303|ef193a4ee24de43c|1cff91f3f49cbd42|2128561755||t20474.9600810583s|s29032376b|29032376|rds|local|vector|||39.422||
+downsampled_2022|stem|9436e4d2fc059fb4|9bfe3981cf21638e|378ecdf875b6cfe4|1885707526||t20474.9605971317s|s26082074b|26082074|rds|local|vector|||26.875||
+downsampled_masked_2022|stem|cacaa84efc2b4f89|eeb98be529979e5a|9595f29dc75447e9|1113907739||t20474.9608397083s|s18846881b|18846881|rds|local|vector|||7.172|attribute variables are assumed to be spatially constant throughout all geometries|

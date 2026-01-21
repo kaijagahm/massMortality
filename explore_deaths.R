@@ -338,14 +338,20 @@ cluster22 <- mm_sub_recent %>% filter(year_cluster_eps5min2 == 2 & year == 2022)
 cluster21 # this is the kina valley mass poisoning
 View(cluster21) # sure enough, all of the individuals involved in this event died by poisoning
 range(cluster21$date) # all the same day, 10/24
-cluster21_before_dates <- c(min(cluster21$date)-days(14), min(cluster21$date)-days(7))
-cluster21_after_dates <- c(max(cluster21$date)+days(7), max(cluster21$date)+days(14))
+
+days_before_max <- 60
+days_before_min <- 0
+days_after_min <- 0
+days_after_max <- 60
+
+cluster21_before_dates <- c(min(cluster21$date)-days(days_before_max), min(cluster21$date)-days(days_before_min))
+cluster21_after_dates <- c(max(cluster21$date)+days(days_after_min), max(cluster21$date)+days(days_after_max))
 cluster21dates <- list(cluster21_before_dates, cluster21_after_dates)
 
 cluster22 # this is also probably a mass poisoning? COM is gout and it's all in the same area, large crater
 View(cluster22) # and yes, sure enough, cause of death for all of them is poisoning.
-cluster22_before_dates <- c(min(cluster22$date)-days(14), min(cluster22$date)-days(7))
-cluster22_after_dates <- c(max(cluster22$date)+days(7), max(cluster22$date)+days(14))
+cluster22_before_dates <- c(min(cluster22$date)-days(days_before_max), min(cluster22$date)-days(days_before_min))
+cluster22_after_dates <- c(max(cluster22$date)+days(days_after_min), max(cluster22$date)+days(days_after_max))
 cluster22dates <- list(cluster22_before_dates, cluster22_after_dates)
 
 write_rds(cluster21dates, file = "data/created/cluster21dates.RDS")

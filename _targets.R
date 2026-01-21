@@ -21,10 +21,10 @@ list(
   tar_target(ww, get_ww(ww_file, date_cols = c("deploy_on_date", "deploy_off_date", "date_death"))),
   tar_target(deaths, get_deaths(ww, min_date, max_date)),
   tar_target(mm, readxl::read_excel("data/raw/M&m_new_2010_2024 (1).xlsx", sheet = 1)),
-  tar_target(inpa_data_2021, readRDS(here("data/created/download_gps_data/inpa_data_2021_version2026-01-19.RDS"))),
-  tar_target(inpa_data_2022, readRDS(here("data/created/download_gps_data/inpa_data_2022_version2026-01-19.RDS"))),
-  tar_target(ornitela_data_2021, readRDS(here("data/created/download_gps_data/ornitela_data_2021_version2026-01-19.RDS"))),
-  tar_target(ornitela_data_2022, readRDS(here("data/created/download_gps_data/ornitela_data_2022_version2026-01-19.RDS"))),
+  tar_target(inpa_data_2021, mutate(readRDS(here("data/created/download_gps_data/inpa_data_2021_version2026-01-19.RDS")), source = "inpa")),
+  tar_target(inpa_data_2022, mutate(readRDS(here("data/created/download_gps_data/inpa_data_2022_version2026-01-19.RDS")), source = "inpa")),
+  tar_target(ornitela_data_2021, mutate(readRDS(here("data/created/download_gps_data/ornitela_data_2021_version2026-01-19.RDS")), source = "ornitela")),
+  tar_target(ornitela_data_2022, mutate(readRDS(here("data/created/download_gps_data/ornitela_data_2022_version2026-01-19.RDS")), source = "ornitela")),
   
   tar_target(gps_2021_1, sf::st_as_sf(bind_rows(as.data.frame(ornitela_data_2021), as.data.frame(inpa_data_2021)), crs = "WGS84")),
   tar_target(gps_2022_1, sf::st_as_sf(bind_rows(as.data.frame(ornitela_data_2022), as.data.frame(inpa_data_2022)), crs = "WGS84")),
@@ -51,12 +51,13 @@ list(
   ## Clean the data with the various steps in the vultureUtils::cleanData function
   tar_target(cleaned_2021, clean_data(removed_deploy_2021)),
   tar_target(cleaned_2022, clean_data(removed_deploy_2022)),
-  tar_target(cleaned, st_as_sf(bind_rows(cleaned_2021, cleaned_2022), remove = F)),
-  
-  tar_target(downsampled, mutate(sf::st_transform(sf::st_as_sf(downsample_10min(cleaned), coords = c("location_long", "location_lat"), crs = "WGS84", remove = F), 32636), timestamp_il = lubridate::with_tz(timestamp, tzone = "Israel"), date_il = lubridate::date(timestamp_il))),
+
+  tar_target(downsampled_2021, mutate(sf::st_transform(sf::st_as_sf(downsample_10min(cleaned_2021), coords = c("location_long", "location_lat"), crs = "WGS84", remove = F), 32636), timestamp_il = lubridate::with_tz(timestamp, tzone = "Israel"), date_il = lubridate::date(timestamp_il))),
+  tar_target(downsampled_2022, mutate(sf::st_transform(sf::st_as_sf(downsample_10min(cleaned_2022), coords = c("location_long", "location_lat"), crs = "WGS84", remove = F), 32636), timestamp_il = lubridate::with_tz(timestamp, tzone = "Israel"), date_il = lubridate::date(timestamp_il))),
   tar_target(bbox_south_big, sf::st_transform(
     st_as_sfc(st_set_crs(st_bbox(c("xmin" = 34.205, "xmax" = 35.787,
                                    "ymin" = 29.478, "ymax" = 31.775)), 
                          "WGS84")), 32636)),
-  tar_target(downsampled_masked, st_crop(downsampled, bbox_south_big))
+  tar_target(downsampled_masked_2021, st_crop(downsampled_2021, bbox_south_big)),
+  tar_target(downsampled_masked_2022, st_crop(downsampled_2022, bbox_south_big))
 )
