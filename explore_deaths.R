@@ -339,10 +339,10 @@ cluster21 # this is the kina valley mass poisoning
 View(cluster21) # sure enough, all of the individuals involved in this event died by poisoning
 range(cluster21$date) # all the same day, 10/24
 
-days_before_max <- 60
+days_before_max <- 240
 days_before_min <- 0
 days_after_min <- 0
-days_after_max <- 60
+days_after_max <- 240
 
 cluster21_before_dates <- c(min(cluster21$date)-days(days_before_max), min(cluster21$date)-days(days_before_min))
 cluster21_after_dates <- c(max(cluster21$date)+days(days_after_min), max(cluster21$date)+days(days_after_max))

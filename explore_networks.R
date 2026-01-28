@@ -33,27 +33,27 @@ source("getEdges_new.R")
 # gps_after_22 <- downsampled_masked %>% filter(date_il >= cluster22dates[[2]][1],
 #                                        date_il <= cluster22dates[[2]][2])%>% st_as_sf(remove = F)
 
-# Split gps data into overlapping 5-day increments
-split_overlapping <- function(gps){
+# Split gps data into overlapping increments
+split_overlapping <- function(gps, days){
   start_date <- as.Date(min(gps$timestamp))
   end_date   <- as.Date(max(gps$timestamp))
   
-  window_starts <- seq(from = start_date, to   = end_date - days(4),  # last full 5-day window
+  window_starts <- seq(from = start_date, to   = end_date - days(days-1),  # last full window
     by = "1 day")
   
   # make list of 5-day windows
-  gps_5day_windows <- purrr::map(
+  gps_windows <- purrr::map(
     window_starts, function(win_start){
-      win_end <- win_start + days(4)
+      win_end <- win_start + days(days-1)
       gps %>% filter(timestamp >= as.POSIXct(win_start) &
             timestamp <  as.POSIXct(win_end + days(1)))}
   )
   
   # name list elements with their cutoff dates
-  names(gps_5day_windows) <- map_chr(
+  names(gps_windows) <- map_chr(
     window_starts,
     function(win_start) {
-      win_end <- win_start + days(4)
+      win_end <- win_start + days(days-1)
       paste0(
         format(win_start, "%Y.%m.%d"),
         "_",
@@ -61,11 +61,17 @@ split_overlapping <- function(gps){
       )
     }
   )
-  return(gps_5day_windows)
+  return(gps_windows)
 }
 
-windows_21 <- split_overlapping(downsampled_masked_2021)
-windows_22 <- split_overlapping(downsampled_masked_2022)
+windows_21 <- split_overlapping(downsampled_masked_2021, days = 5)
+windows_22 <- split_overlapping(downsampled_masked_2022, days = 5)
+
+windows_21_3 <- split_overlapping(downsampled_masked_2021, days = 3)
+windows_22_3 <- split_overlapping(downsampled_masked_2022, days = 3)
+
+windows_21_10 <- split_overlapping(downsampled_masked_2021, days = 10)
+windows_22_10 <- split_overlapping(downsampled_masked_2022, days = 10)
 
 # # Let's get which individuals died
 # mm_sub_recent
@@ -96,6 +102,11 @@ tc <- "timestamp_il"
 sris_2021 <- map(windows_21, ~getEdges_new(dataset = .x, consecThreshold = ct, distThreshold = dt, speedThreshLower = stl, idCol = idc, return = r, timestampCol = tc, roostPolygons = rp))
 sris_2022 <- map(windows_22, ~getEdges_new(dataset = .x, consecThreshold = ct, distThreshold = dt, speedThreshLower = stl, idCol = idc, return = r, timestampCol = tc, roostPolygons = rp))
 
+sris_2021_3 <- map(windows_21_3, ~getEdges_new(dataset = .x, consecThreshold = ct, distThreshold = dt, speedThreshLower = stl, idCol = idc, return = r, timestampCol = tc, roostPolygons = rp))
+sris_2022_3 <- map(windows_22_3, ~getEdges_new(dataset = .x, consecThreshold = ct, distThreshold = dt, speedThreshLower = stl, idCol = idc, return = r, timestampCol = tc, roostPolygons = rp))
+
+sris_2021_10 <- map(windows_21_10, ~getEdges_new(dataset = .x, consecThreshold = ct, distThreshold = dt, speedThreshLower = stl, idCol = idc, return = r, timestampCol = tc, roostPolygons = rp))
+sris_2022_10 <- map(windows_22_10, ~getEdges_new(dataset = .x, consecThreshold = ct, distThreshold = dt, speedThreshLower = stl, idCol = idc, return = r, timestampCol = tc, roostPolygons = rp))
 # sri_before_21 <- getEdges_new(dataset = gps_before_21, consecThreshold = ct, distThreshold = dt, speedThreshLower = stl, idCol = idc, return = r, timestampCol = tc, roostPolygons = rp) 
 # sri_after_21 <- getEdges_new(dataset = gps_after_21, consecThreshold = ct, distThreshold = dt, speedThreshLower = stl, idCol = idc, return = r, timestampCol = tc, roostPolygons = rp) 
 # sri_before_22 <- getEdges_new(dataset = gps_before_22, consecThreshold = ct, distThreshold = dt, speedThreshLower = stl, idCol = idc, return = r, timestampCol = tc, roostPolygons = rp) 
@@ -106,9 +117,19 @@ sris_2022 <- map(windows_22, ~getEdges_new(dataset = .x, consecThreshold = ct, d
 
 # sris <- sri_21 %>% mutate(year = 2021) %>% bind_rows(sri_22 %>% mutate(year = 2022))
 
-sris_2021_df <- purrr::list_rbind(sris_2021, names_to = "period") %>% mutate(year = 2021) %>% separate_wider_delim(cols = "period", delim = "_", names = c("period_start", "period_end")) %>% mutate(across(starts_with("period_"), lubridate::ymd))
+make_sri_df <- function(mylist){
+  out <- purrr::list_rbind(mylist, names_to = "period") %>% mutate(year = 2021) %>% separate_wider_delim(cols = "period", delim = "_", names = c("period_start", "period_end")) %>% mutate(across(starts_with("period_"), lubridate::ymd))
+  return(out)
+}
 
-sris_2022_df <- purrr::list_rbind(sris_2022, names_to = "period") %>% mutate(year = 2022) %>% separate_wider_delim(cols = "period", delim = "_", names = c("period_start", "period_end")) %>% mutate(across(starts_with("period_"), lubridate::ymd))
+sris_2021_df <- make_sri_df(sris_2021)
+sris_2022_df <- make_sri_df(sris_2022)
+
+sris_2021_df_3 <- make_sri_df(sris_2021_3)
+sris_2022_df_3 <- make_sri_df(sris_2022_3)
+
+sris_2021_df_10 <- make_sri_df(sris_2021_10)
+sris_2022_df_10 <- make_sri_df(sris_2022_10)
 
 # SRI over time for all dyads. Very slow. Interesting that it seems to be going slightly upward overall, at least for 2021. I wonder why?
 # sris_2021_df %>%
@@ -123,6 +144,12 @@ sris_2022_df <- purrr::list_rbind(sris_2022, names_to = "period") %>% mutate(yea
 
 gs_2021 <- map(sris_2021, ~as_tbl_graph(select(.x, ID1, ID2, sri), directed = F))
 gs_2022 <- map(sris_2022, ~as_tbl_graph(select(.x, ID1, ID2, sri), directed = F))
+
+gs_2021_3 <- map(sris_2021_3, ~as_tbl_graph(select(.x, ID1, ID2, sri), directed = F))
+gs_2022_3 <- map(sris_2022_3, ~as_tbl_graph(select(.x, ID1, ID2, sri), directed = F))
+
+gs_2021_10 <- map(sris_2021_10, ~as_tbl_graph(select(.x, ID1, ID2, sri), directed = F))
+gs_2022_10 <- map(sris_2022_10, ~as_tbl_graph(select(.x, ID1, ID2, sri), directed = F))
 
 get_layout <- function(dfs){
   all_nodes <- purrr::list_rbind(dfs) %>%
@@ -148,6 +175,12 @@ get_layout <- function(dfs){
 
 layout_2021 <- get_layout(sris_2021)
 layout_2022 <- get_layout(sris_2022)
+
+layout_2021_3 <- get_layout(sris_2021_3)
+layout_2022_3 <- get_layout(sris_2022_3)
+
+layout_2021_10 <- get_layout(sris_2021_10)
+layout_2022_10 <- get_layout(sris_2022_10)
 
 plot_network_fixed <- function(edges, layout_tbl, title = NULL) {
   
@@ -191,11 +224,30 @@ graphs_2021 <- map(plots_graphs_2021, "graph")
 plots_2022 <- map(plots_graphs_2022, "plot")
 graphs_2022 <- map(plots_graphs_2022, "graph")
 
-# walk2(plots_2021, names(plots_2021), ~ggsave(.x, filename = paste0("data/created/5day_rollingwindow_networks/2021/", .y, ".png"), width = 6, height = 6))
-# walk2(plots_2022, names(plots_2022), ~ggsave(.x, filename = paste0("data/created/5day_rollingwindow_networks/2022/", .y, ".png"), width = 6, height = 6))
+plots_graphs_2021_3 <- map2(sris_2021_3, names(sris_2021_3), ~plot_network_fixed(.x, layout_2021_3, title = .y))
+plots_graphs_2022_3 <- map2(sris_2022_3, names(sris_2022_3), ~plot_network_fixed(.x, layout_2022_3, title = .y))
+plots_2021_3 <- map(plots_graphs_2021_3, "plot")
+graphs_2021_3 <- map(plots_graphs_2021_3, "graph")
+plots_2022_3 <- map(plots_graphs_2022_3, "plot")
+graphs_2022_3 <- map(plots_graphs_2022_3, "graph")
+
+plots_graphs_2021_10 <- map2(sris_2021_10, names(sris_2021_10), ~plot_network_fixed(.x, layout_2021_10, title = .y))
+plots_graphs_2022_10 <- map2(sris_2022_10, names(sris_2022_10), ~plot_network_fixed(.x, layout_2022, title = .y))
+plots_2021_10 <- map(plots_graphs_2021_10, "plot")
+graphs_2021_10 <- map(plots_graphs_2021_10, "graph")
+plots_2022_10 <- map(plots_graphs_2022_10, "plot")
+graphs_2022_10 <- map(plots_graphs_2022_10, "graph")
+
+# walk2(plots_2021, names(plots_2021), ~ggsave(.x, filename = paste0("data/created/rollingwindow_networks/days_5/2021/", .y, ".png"), width = 6, height = 6))
+# walk2(plots_2022, names(plots_2022), ~ggsave(.x, filename = paste0("data/created/rollingwindow_networks/days_5/2022/", .y, ".png"), width = 6, height = 6))
+# 
+# walk2(plots_2021_3, names(plots_2021_3), ~ggsave(.x, filename = paste0("data/created/rollingwindow_networks/days_3/2021/", .y, ".png"), width = 6, height = 6))
+# walk2(plots_2022_3, names(plots_2022_3), ~ggsave(.x, filename = paste0("data/created/rollingwindow_networks/days_3/2022/", .y, ".png"), width = 6, height = 6))
+# 
+# walk2(plots_2021_10, names(plots_2021_10), ~ggsave(.x, filename = paste0("data/created/rollingwindow_networks/days_10/2021/", .y, ".png"), width = 6, height = 6))
+# walk2(plots_2022_10, names(plots_2022_10), ~ggsave(.x, filename = paste0("data/created/rollingwindow_networks/days_10/2022/", .y, ".png"), width = 6, height = 6))
 
 # Interesting! Just anecdotally, the networks look less dense. Not sure if they actually are. It would be interesting to track the density over time; I would be really confused if it actually turns out that the poisoning had this huge an impact.
-
 network_metrics <- function(g, weight = "sri", loops = FALSE) {
   
   nodes <- c((g %>% activate(edges) %>% filter(sri > 0) %>% pull(from)),
@@ -206,6 +258,9 @@ network_metrics <- function(g, weight = "sri", loops = FALSE) {
   density <- g %>%
     activate(nodes) %>%
     igraph::edge_density(loops = loops)
+
+  assort_degree <- igraph::assortativity(g, values = igraph::degree(g))
+  avg_path_length <- igraph::mean_distance(g)
   
   ## ---- Node-level metrics ----
   node_tbl <- g %>%
@@ -217,60 +272,135 @@ network_metrics <- function(g, weight = "sri", loops = FALSE) {
            n = n) %>%
     as_tibble()
   
+  ## ---- Network-level metrics ----
+  network_tbl <- tibble(density = density, 
+                        assort_degree = assort_degree,
+                        avg_path_length = avg_path_length) 
+  
   ## ---- Output ----
   list(
-    density       = density,
+    network_metrics = network_tbl,
     node_metrics  = node_tbl
   )
-} # XXX start here--add n
+}
 
 # Apply to graphs
 metrics_2021 <- map(graphs_2021, network_metrics, weight = "sri")
 metrics_2022 <- map(graphs_2022, network_metrics, weight = "sri")
 
-# network-level metrics
-network_metrics_2021 <- map_dfr(metrics_2021, ~ tibble(density  = .x$density,), .id = "time_period") %>% separate_wider_delim(cols = "time_period", delim = "_", names = c("period_start", "period_end")) %>% mutate(across(starts_with("period_"), lubridate::ymd), year = 2021)
+metrics_2021_3 <- map(graphs_2021_3, network_metrics, weight = "sri")
+metrics_2022_3 <- map(graphs_2022_3, network_metrics, weight = "sri")
 
-network_metrics_2022 <- map_dfr(metrics_2022, ~ tibble(density  = .x$density,), .id = "time_period") %>% separate_wider_delim(cols = "time_period", delim = "_", names = c("period_start", "period_end")) %>% mutate(across(starts_with("period_"), lubridate::ymd), year = 2022)
+metrics_2021_10 <- map(graphs_2021_10, network_metrics, weight = "sri")
+metrics_2022_10 <- map(graphs_2022_10, network_metrics, weight = "sri")
+
+# network-level metrics
+get_network_metrics_df <- function(metrics, yr, dys){
+  out <- purrr::list_rbind(map(metrics, "network_metrics"), names_to = "time_period") %>% separate_wider_delim(cols = "time_period", delim = "_", names = c("period_start", "period_end")) %>% mutate(across(starts_with("period_"), lubridate::ymd), year = yr, days = dys)
+  return(out)
+}
+network_metrics_2021 <- get_network_metrics_df(metrics_2021, yr = 2021, dys = 5)
+network_metrics_2022 <- get_network_metrics_df(metrics_2022, yr = 2022, dys = 5)
+
+network_metrics_2021_3 <- get_network_metrics_df(metrics_2021_3, yr = 2021, dys = 3)
+network_metrics_2022_3 <- get_network_metrics_df(metrics_2022_3, yr = 2022, dys = 3)
+
+network_metrics_2021_10 <- get_network_metrics_df(metrics_2021_10, yr = 2021, dys = 10)
+network_metrics_2022_10 <- get_network_metrics_df(metrics_2022_10, yr = 2022, dys = 10)
+
+get_node_metrics_df <- function(metrics, yr, dys){
+  out <- map_dfr(metrics, "node_metrics", .id = "time_period") %>% separate_wider_delim(cols = "time_period", delim = "_", names = c("period_start", "period_end")) %>% mutate(across(starts_with("period_"), lubridate::ymd), year = yr, days = dys)
+  return(out)
+}
 
 # node-level metrics
-node_metrics_2021 <- map_dfr(metrics_2021, "node_metrics", .id = "time_period") %>% separate_wider_delim(cols = "time_period", delim = "_", names = c("period_start", "period_end")) %>% mutate(across(starts_with("period_"), lubridate::ymd), year = 2021)
+node_metrics_2021 <- get_node_metrics_df(metrics_2021, yr = 2021, dys = 5)
+node_metrics_2022 <- get_node_metrics_df(metrics_2021, yr = 2022, dys = 5)
 
-node_metrics_2022 <- map_dfr(metrics_2022, "node_metrics", .id = "time_period") %>% separate_wider_delim(cols = "time_period", delim = "_", names = c("period_start", "period_end")) %>% mutate(across(starts_with("period_"), lubridate::ymd), year = 2022)
+node_metrics_2021_3 <- get_node_metrics_df(metrics_2021_3, yr = 2021, dys = 3)
+node_metrics_2022_3 <- get_node_metrics_df(metrics_2021_3, yr = 2022, dys = 3)
+
+node_metrics_2021_10 <- get_node_metrics_df(metrics_2021_10, yr = 2021, dys = 10)
+node_metrics_2022_10 <- get_node_metrics_df(metrics_2021_10, yr = 2022, dys = 10)
+
 
 death_date_2021_min <- lubridate::ymd("2021-10-24")
 death_date_2021_max <- lubridate::ymd("2021-10-24")
 death_date_2022_min <- lubridate::ymd("2022-10-12")
 death_date_2022_max <- lubridate::ymd("2022-10-15")
-death_df <- data.frame(min = c(death_date_2021_min, death_date_2022_min),
-                       max = c(death_date_2021_max, death_date_2022_max),
+death_df <- data.frame(death_min = c(death_date_2021_min, death_date_2022_min),
+                       death_max = c(death_date_2021_max, death_date_2022_max),
                        year = c(2021, 2022))
 
-network_metrics_2021 %>%
-  bind_rows(network_metrics_2022) %>%
-  ggplot(aes(x = period_start, y = density))+
-  geom_line()+
-  theme_minimal()+
-  facet_wrap(~year, scales = "free_x", ncol = 1)+
-  geom_vline(data = death_df, aes(xintercept = min), color = "red", alpha = 0.5)+
-  labs(x = "Start of 5-day window (overlapping)",
-       y = "Network density")
+network_metrics_all <- purrr::list_rbind(list(network_metrics_2021, network_metrics_2022, network_metrics_2021_3, network_metrics_2022_3, network_metrics_2021_10, network_metrics_2022_10)) %>%
+  left_join(death_df, by = "year")
 
-# yeah, so it's pretty clear that these poisonings do not cause fluctuations that are at all out of the ordinary in these networks. That's good, but also kind of a bummer for the sake of this analysis.
+node_metrics_all <- purrr::list_rbind(list(node_metrics_2021, node_metrics_2022, node_metrics_2021_3, node_metrics_2022_3, node_metrics_2021_10, node_metrics_2022_10)) %>%
+  left_join(death_df, by = "year")
 
-node_metrics_2021 %>%
-  bind_rows(node_metrics_2022) %>%
-  ggplot(aes(x = factor(period_start), y = degree_rel))+
-  geom_boxplot(fill = "gray", size = 0.5)+
-  theme_minimal()+
-  facet_wrap(~year, scales = "free_x", ncol = 1)+
-  theme(panel.grid.minor.x = element_blank(),
-        panel.grid.major.x = element_blank(),
-        axis.text.x = element_blank())
+write_rds(network_metrics_all, file = "data/created/network_metrics_all_2026-01-27.RDS")
+write_rds(node_metrics_all, file = "data/created/node_metrics_all_2026-01-27.RDS")
+# network_metrics_all <- readRDS("data/created/network_metrics_all_2026-01-27.RDS")
+# node_metrics_all <- readRDS("data/created/node_metrics_all_2026-01-27.RDS")
 
+# Three zoom scales
+# 240 days (8 months)
+# 120 days (4 months)
+# 60 days (2 months)
+# 30 days (1 month)
+# Basing these all on a single death date, death_min, not accounting for death_max yet.
 
+plot_fun <- function(dataset, ndays, var, axis_label, death){
+  p <- dataset %>%
+    filter(period_start >= (death_min - lubridate::days(ndays)) & period_end <= (death_min + lubridate::days(ndays))) %>%
+    ggplot(aes(x = period_start, y = .data[[var]], color = factor(days)))+
+    geom_line()+
+    theme_minimal()+
+    facet_wrap(~year, scales = "free_x", ncol = 1)+
+    geom_vline(data = death, aes(xintercept = death_min), color = "black", alpha = 0.7)+
+    labs(y = axis_label,
+         color = "Time window (days)",
+         caption = paste0(ndays, " days"))+
+    theme(legend.position = "bottom",
+          axis.title.x = element_blank())
+  return(p)
+}
+
+# 240 days
+den_240 <- plot_fun(network_metrics_all, ndays = 240, var = "density", axis_label = "Network density", death = death_df)
+asd_240 <- plot_fun(network_metrics_all, ndays = 240, var = "assort_degree", axis_label = "Degree assortativity", death = death_df)
+apl_240 <- plot_fun(network_metrics_all, ndays = 240, var = "avg_path_length", axis_label = "Avg. path length", death = death_df)
+
+# 120 days
+den_120 <- plot_fun(network_metrics_all, ndays = 120, var = "density", axis_label = "Network density", death = death_df)
+asd_120 <- plot_fun(network_metrics_all, ndays = 120, var = "assort_degree", axis_label = "Degree assortativity", death = death_df)
+apl_120 <- plot_fun(network_metrics_all, ndays = 120, var = "avg_path_length", axis_label = "Avg. path length", death = death_df)
+
+# 60 days
+den_60 <- plot_fun(network_metrics_all, ndays = 60, var = "density", axis_label = "Network density", death = death_df)
+asd_60 <- plot_fun(network_metrics_all, ndays = 60, var = "assort_degree", axis_label = "Degree assortativity", death = death_df)
+apl_60 <- plot_fun(network_metrics_all, ndays = 60, var = "avg_path_length", axis_label = "Avg. path length", death = death_df)
+
+# 30 days
+den_30 <- plot_fun(network_metrics_all, ndays = 30, var = "density", axis_label = "Network density", death = death_df)
+asd_30 <- plot_fun(network_metrics_all, ndays = 30, var = "assort_degree", axis_label = "Degree assortativity", death = death_df)
+apl_30 <- plot_fun(network_metrics_all, ndays = 30, var = "avg_path_length", axis_label = "Avg. path length", death = death_df)
+
+no_y_axis <- theme(
+  axis.text.y  = element_blank(),
+  axis.ticks.y = element_blank(),
+  axis.title.y = element_blank()
+)
+
+(den_30 | (den_60 + no_y_axis))/(den_120 | (den_240 + no_y_axis)) + plot_layout(guides = "collect", axes = "collect") & theme(legend.position = "bottom")
+
+(asd_30 | (asd_60 + no_y_axis))/(asd_120 | (asd_240 + no_y_axis)) + plot_layout(guides = "collect", axes = "collect") & theme(legend.position = "bottom")
+
+(apl_30 | (apl_60 + no_y_axis))/(apl_120 | (apl_240 + no_y_axis)) + plot_layout(guides = "collect", axes = "collect") & theme(legend.position = "bottom")
 
 # XXX NEXT STEPS
 # Figure out the names matching
-# Look at Conner's papers about network-level metrics.
+# Roost networks
+# Dig into literature: expected consequences of losing individuals, so we can test
 # Discuss what to do next
+

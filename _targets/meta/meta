@@ -14,28 +14,86 @@ bbox_south_big|stem|e0e935b0e872b75b|bf5c509ea4a74374|2c530c1562a7fbd1|-17483070
 cleaned|stem|98ffaf300706062d|13dd07be64a0f079|0de8f80cfe82ea1c|-863814015||t20474.8866722779s|s36669226b|36669226|rds|local|vector|||1.469||
 downsampled|stem|fe0d243cef249a69|84cc9f1078bbea5c|c510f89ebd70424b|-1777741541||t20474.8873424948s|s33491941b|33491941|rds|local|vector|||38.922||
 downsampled_masked|stem|ade35412f6abb308|5783b3ebb342f2f4|a515f2edb72a5f2f|-710076677||t20474.8875609947s|s20675979b|20675979|rds|local|vector|||5.859|attribute variables are assumed to be spatially constant throughout all geometries|
-gps_2021_1|stem|df1e69d3f79dc000|1e29a9b390cd27fc|3bf685e2aed2c2ee|1794074390||t20474.9454482049s|s11736644b|11736644|rds|local|vector|||1.875||
-gps_2021|stem|95337a7c3c2f03b6|add8d3927e0dd0ca|8ff1eb45655469cb|1631219601||t20474.9456725487s|s15083473b|15083473|rds|local|vector|||0.516||
-gps_2021_fixed|stem|21bfd2e90d74b06e|80f1dee73dc91727|2efbee2459bdf30a|-260356718||t20474.9459556074s|s15150821b|15150821|rds|local|vector|||3.954||
-removed_deploy_2021|stem|1aa5d1509aa9de85|0a8624c41484453e|21b6432422a12c80|1921358013||t20474.946304228s|s15173713b|15173713|rds|local|vector|||6.219|There were 2 warnings in `mutate()`. The first warning was: i In argument: `across(c('deploy_on_date', 'deploy_off_date'), as.numeric)`. Caused by warning: ! NAs introduced by coercion i Run `dplyr::last_dplyr_warnings()` to see the 1 remaining warning.|
-cleaned_2021|stem|35c9d42c00ede791|d08bbffd9c70ad98|58e98bb7c6978c25|-476990209||t20474.9470037563s|s23664850b|23664850|rds|local|vector|||31.485||
-downsampled_2021|stem|8f411c4d64511e57|1963c30db408396a|4a3c1ae219165c23|330131408||t20474.9476883532s|s21172228b|21172228|rds|local|vector|||18.141||
-downsampled_masked_2021|stem|e6fa0efb3ad18161|cb460a139787b260|d33a600c0ff81915|-732155395||t20474.9480804314s|s14080685b|14080685|rds|local|vector|||4.265|attribute variables are assumed to be spatially constant throughout all geometries|
-gps_2022_1|stem|b336c8023a06db07|29dd7a42d113f454|5efa646a8d076f7d|2037924079||t20474.9547694526s|s14255755b|14255755|rds|local|vector|||2.234||
-gps_2022|stem|97e04dbf9b713aca|0afcb6fd710ae9ea|23f80346d6634595|-369333788||t20474.9549487806s|s18247286b|18247286|rds|local|vector|||0.141||
-gps_2022_fixed|stem|16a3b9ddfa79cee1|153f7a0866b85ad9|5db32d88a28aa2a6|1489096501||t20474.9551736137s|s18324624b|18324624|rds|local|vector|||4.125||
-removed_deploy_2022|stem|e6296ae2b3040ed3|877ba82900b2711a|b9e69e4275a82821|1937637083||t20474.9554426429s|s18347632b|18347632|rds|local|vector|||7.047|There were 2 warnings in `mutate()`. The first warning was: i In argument: `across(c('deploy_on_date', 'deploy_off_date'), as.numeric)`. Caused by warning: ! NAs introduced by coercion i Run `dplyr::last_dplyr_warnings()` to see the 1 remaining warning.|
+inpa_data_2021|stem|91781356f8a09b4f|3abd9fbcec229085|2c530c1562a7fbd1|735273577||t20480.9328876388s|s14246028b|14246028|rds|local|vector|||8.891||
+inpa_data_2022|stem|f8e4895665192822|5e26aadb1c800a2e|2c530c1562a7fbd1|-1210581480||t20480.9330456515s|s15459271b|15459271|rds|local|vector|||3.36||
+ornitela_data_2021|stem|8ac22fa11999fc42|6e76a73213f2d4f4|2c530c1562a7fbd1|727441808||t20480.9333897419s|s31498708b|31498708|rds|local|vector|||8.391||
+ornitela_data_2022|stem|f41042f716208ff1|db849ce7ef582430|2c530c1562a7fbd1|1584165961||t20480.9338770341s|s42756330b|42756330|rds|local|vector|||12.062||
+gps_2021_1|stem|bd5739a97fe4a3f6|1e29a9b390cd27fc|5c5e67f2c829f064|1794074390||t20480.9344466518s|s45726738b|45726738|rds|local|vector|||6.328||
+gps_2022_1|stem|cca221dd70794b66|29dd7a42d113f454|1086bb85fec615d1|2037924079||t20480.9351713667s|s58204107b|58204107|rds|local|vector|||7.484||
+gps_2021|stem|aad9c1492e2763af|add8d3927e0dd0ca|f5846358a5b74bbf|1631219601||t20480.935746895s|s58557577b|58557577|rds|local|vector|||1.922||
+gps_2022|stem|36faace6d129439a|0afcb6fd710ae9ea|87c86dfc880ad6bc|-369333788||t20480.9365047727s|s74230595b|74230595|rds|local|vector|||0.703||
+gps_2021_fixed|stem|cb34e1166c05316d|80f1dee73dc91727|409555db54491a1b|-260356718||t20480.9377416073s|s58786618b|58786618|rds|local|vector|||10.125||
+gps_2022_fixed|stem|ff27a9336bcb5a31|153f7a0866b85ad9|bf21fa96b2f7091c|1489096501||t20480.9379481769s|s74497771b|74497771|rds|local|vector|||12.203||
+removed_deploy_2021|stem|58540e542f53bb15|0a8624c41484453e|8f1695de19e7efad|1921358013||t20480.9385382289s|s58930140b|58930140|rds|local|vector|||14.875|There were 2 warnings in `mutate()`. The first warning was: i In argument: `across(c('deploy_on_date', 'deploy_off_date'), as.numeric)`. Caused by warning: ! NAs introduced by coercion i Run `dplyr::last_dplyr_warnings()` to see the 1 remaining warning.|
+removed_deploy_2022|stem|8137dd00573e58c0|877ba82900b2711a|abb068a4ffd34916|1937637083||t20480.9389659398s|s74701412b|74701412|rds|local|vector|||18.5|There were 2 warnings in `mutate()`. The first warning was: i In argument: `across(c('deploy_on_date', 'deploy_off_date'), as.numeric)`. Caused by warning: ! NAs introduced by coercion i Run `dplyr::last_dplyr_warnings()` to see the 1 remaining warning.|
+cleaned_2021|stem|76c803b7feaf2f09|d08bbffd9c70ad98|0c6f6f6fff569255|-476990209||t20480.9406718438s|s92279980b|92279980|rds|local|vector|||119.234||
+cleaned_2022|stem|e74af62fbb4baa61|ef193a4ee24de43c|23a5c095b7fb519b|2128561755||t20480.941827375s|s119941791b|119941791|rds|local|vector|||160.469||
+downsampled_2021|stem|292d9d20c522baca|1963c30db408396a|94177dde2dc39ead|330131408||t20480.9422124577s|s82532605b|82532605|rds|local|vector|||78.547||
+downsampled_masked_2021|stem|e07b24146c4735f4|cb460a139787b260|3c24681d40c00425|-732155395||t20480.9428945118s|s56296264b|56296264|rds|local|vector|||19.281|attribute variables are assumed to be spatially constant throughout all geometries|
+downsampled_2022|stem|550c8d4932bc3533|9bfe3981cf21638e|095964354723a52e|1885707526||t20480.943850528s|s104660599b|104660599|rds|local|vector|||103.453||
+downsampled_masked_2022|stem|19eeb77dad5306d8|eeb98be529979e5a|f53e071ab2126b86|1113907739||t20480.9447928403s|s76567943b|76567943|rds|local|vector|||25.922|attribute variables are assumed to be spatially constant throughout all geometries|
+ct|stem|37d56571827d1d53|bb375a30fa348382|2c530c1562a7fbd1|-578099800||t20481.0430727511s|s52b|52|rds|local|vector|||1.25||
+idc|stem|548e90900841297a|f490a9af73d0d1f9|2c530c1562a7fbd1|-753284684||t20481.04307304s|s80b|80|rds|local|vector|||1.282||
+rp|stem|244e4ba6ee6aa41c|5a4f7e82796a2968|2c530c1562a7fbd1|283090623||t20481.0430736756s|s56419b|56419|rds|local|vector|||1.125||
+cluster21dates|stem|6980aeaf097d805b|46151d68fd86eb97|2c530c1562a7fbd1|838158526||t20481.0430728782s|s141b|141|rds|local|vector|||1.063||
+timestampCol|stem|4ad4eff075b1da90|cb8cb0e0cf4147bd|2c530c1562a7fbd1|934349858||t20481.0430735254s|s66b|66|rds|local|vector|||1.063||
+dt|stem|3fe38f9fec558299|c3cddfc9bb5b3f93|2c530c1562a7fbd1|1446676327||t20481.0430741147s|s54b|54|rds|local|vector|||1.359||
+stl|stem|62571700ec33e0b7|beb1d74a05152147|2c530c1562a7fbd1|-420217716||t20481.043074288s|s52b|52|rds|local|vector|||1.172||
+cluster22dates|stem|724f34f09683af76|88242f32b645fdfc|2c530c1562a7fbd1|-1247957184||t20481.0430746s|s144b|144|rds|local|vector|||1.203||
+return|stem|5e00fc9091627f79|1da7a157cc865e44|2c530c1562a7fbd1|-409895479||t20481.0430744845s|s57b|57|rds|local|vector|||1.047||
+mm_sub_recent|stem|c25a91b8a6cd4393|c4491636ad13c9b3|2c530c1562a7fbd1|1835990889||t20481.0430759982s|s4425b|4425|rds|local|vector|||1.187||
+windows_21_3|stem|a410a2adcb0f9658|82819d915be6c474|fb76ccf3b0f12345|-1074866503||t20481.0484864182s|s169311234b|169311234|rds|local|vector|||46.531||
+tc|stem|4ad4eff075b1da90|cb8cb0e0cf4147bd|2c530c1562a7fbd1|2013059650||t20481.091396353s|s66b|66|rds|local|vector|||5.094||
+r|stem|5e00fc9091627f79|1da7a157cc865e44|2c530c1562a7fbd1|-538361441||t20481.0920892357s|s57b|57|rds|local|vector|||1.188||
+windows_22_3|stem|4dd6df2c89a861f6|a3dc5e0c3590a589|f349c9addf90af6e|1011593283||t20481.0949596407s|s227780186b|227780186|rds|local|vector|||56.828||
+windows_21_5|stem|ebe83ff1809968c4|2a71347075b742e8|fb76ccf3b0f12345|-889777800||t20481.0950734744s|s275150203b|275150203|rds|local|vector|||46.797||
+windows_22_5|stem|0a712b71ec7cddcc|7bd775fd68bb0fdc|f349c9addf90af6e|-143600492||t20481.0958188932s|s371314802b|371314802|rds|local|vector|||62.922||
+windows_21_10|stem|c1109dc61dd39fa0|0920f7a5636003b4|fb76ccf3b0f12345|1920617005||t20481.0966200342s|s533438617b|533438617|rds|local|vector|||57.485||
+windows_22_10|stem|4ad9b9d0f45ef949|4083d33315915485|f349c9addf90af6e|-1227867668||t20481.0979634772s|s722896851b|722896851|rds|local|vector|||76.594||
+sris_2021_3|stem|ddb11185ef321eda|169d41541ee72050|1ee8032157a06cd9|832281610||t20481.1009869428s|s5026853b|5026853|rds|local|vector|||661||
+layout_2021_3|stem|4270e50259596b81|e040254e2c9bd991|f0cd95199e5e1bf0|-2145463225||t20481.1526747645s|s186163b|186163|rds|local|vector|||1.032||
+gs_2021_3|stem|2654ebf38d71d07c|59d7c8d98cccc059|afa6fb5abdd0a42b|1243219550||t20481.1526900027s|s2085387b|2085387|rds|local|vector|||1.906||
+sris_2021_df_3|stem|d33eb226d93fdc0c|4f503ffab4850265|1c767f8566b962ff|-382718112||t20481.1527148428s|s3155850b|3155850|rds|local|vector|||2.516||
+plots_graphs_2021_3|stem|8ee93ee073582527|c8c9f202457f73b8|e206234a3ef96daf|137938388||t20481.1533674491s|s94934422b|94934422|rds|local|vector|||22.687||
+graphs_2021_3|stem|7418c3db07a6bdf9|e6f9fc36cdec0b81|23c5dbca45ccc9fc|-1692816298||t20481.153544085s|s4539848b|4539848|rds|local|vector|||0.016||
+plot_network_fixed|function|3d1bc3b1931618db
+split_overlapping|function|8ac67f52e4caf93e
 get_ww|function|f16ceabcfa33c5cd
 clean_data|function|ba7d1611ac4d4dfa
+calcSRI_new|function|5407c57074403dbb
+get_layout|function|bb00ea648cd91d53
 process_deployments|function|51f0b90aedea8c6e
 downsample_10min|function|80739bfa691aaa7b
 get_loginObject|function|3d0444bbc27ce24f
 get_deaths|function|42bd7bbbd6db88ea
+make_sri_df|function|c6a900d397d69147
 fix_names_ages|function|3077fd73cdf890d4
-inpa_data_2021|stem|d602bbb6a2914256|3abd9fbcec229085|2c530c1562a7fbd1|735273577||t20474.9591236221s|s3273060b|3273060|rds|local|vector|||2.032||
-inpa_data_2022|stem|0dd4b37b60817d9a|5e26aadb1c800a2e|2c530c1562a7fbd1|-1210581480||t20474.959164327s|s3847745b|3847745|rds|local|vector|||1.015||
-ornitela_data_2021|stem|d4816a14dd80db7b|6e76a73213f2d4f4|2c530c1562a7fbd1|727441808||t20474.9592548593s|s8506464b|8506464|rds|local|vector|||2.328||
-ornitela_data_2022|stem|36023306bdb540d6|db849ce7ef582430|2c530c1562a7fbd1|1584165961||t20474.9593620509s|s10443499b|10443499|rds|local|vector|||2.468||
-cleaned_2022|stem|badfa8d9ff746303|ef193a4ee24de43c|1cff91f3f49cbd42|2128561755||t20474.9600810583s|s29032376b|29032376|rds|local|vector|||39.422||
-downsampled_2022|stem|9436e4d2fc059fb4|9bfe3981cf21638e|378ecdf875b6cfe4|1885707526||t20474.9605971317s|s26082074b|26082074|rds|local|vector|||26.875||
-downsampled_masked_2022|stem|cacaa84efc2b4f89|eeb98be529979e5a|9595f29dc75447e9|1113907739||t20474.9608397083s|s18846881b|18846881|rds|local|vector|||7.172|attribute variables are assumed to be spatially constant throughout all geometries|
+network_metrics|function|f8c5de248f3fd49a
+spaceTimeGroups_new|function|92beca8094521e52
+getEdges_new|function|038cf2bf49112800
+metrics_2021_3|stem|f1e8ab7225ce5260|9ec596b113c694a1|da7fe2171a527b03|1043311778||t20481.1815456045s|s676584b|676584|rds|local|vector|||14||
+plots_2021_3|stem|9cd1fd62ebe6d627|332794c57e6f7883|23c5dbca45ccc9fc|-565121779||t20481.1819751691s|s90240375b|90240375|rds|local|vector|||0||
+plot_network_fixed|function|3d1bc3b1931618db
+split_overlapping|function|8ac67f52e4caf93e
+get_ww|function|f16ceabcfa33c5cd
+clean_data|function|ba7d1611ac4d4dfa
+get_node_metrics_df|function|ad4a3fb797d24e90
+calcSRI_new|function|5407c57074403dbb
+get_layout|function|bb00ea648cd91d53
+process_deployments|function|51f0b90aedea8c6e
+get_network_metrics_df|function|3db82804430e4ba0
+downsample_10min|function|80739bfa691aaa7b
+get_loginObject|function|3d0444bbc27ce24f
+get_deaths|function|42bd7bbbd6db88ea
+make_sri_df|function|c6a900d397d69147
+fix_names_ages|function|3077fd73cdf890d4
+network_metrics|function|f8c5de248f3fd49a
+spaceTimeGroups_new|function|92beca8094521e52
+getEdges_new|function|038cf2bf49112800
+death_date_2021_min|stem|f9d425724ad0f4be|435e43d92af134db|2c530c1562a7fbd1|-457031876||t20481.1844845107s|s82b|82|rds|local|vector|||2.187||
+death_date_2021_max|stem|f9d425724ad0f4be|435e43d92af134db|2c530c1562a7fbd1|1957714684||t20481.1844846745s|s82b|82|rds|local|vector|||2.219||
+death_date_2022_max|stem|abbea1dc72a20b72|973a8694b47401fa|2c530c1562a7fbd1|-1661686842||t20481.184484894s|s82b|82|rds|local|vector|||2.234||
+node_metrics_2021_3|stem|a35c307abe02697d|9e5bcbd05bf37cee|071ed5848e811837|-1034564170||t20481.1844992739s|s598638b|598638|rds|local|vector|||0.281||
+network_metrics_2021_3|stem|d3cb4c631747a56b|1bf43454ad03dea2|544f3a285b260b8f|-1166018209||t20481.1845019356s|s11419b|11419|rds|local|vector|||0.031||
+death_date_2022_min|stem|cde8bf4c62282003|6e6b37f770b9680f|2c530c1562a7fbd1|-988029097||t20481.1845023747s|s83b|83|rds|local|vector|||0||
+death_df|stem|67a4ddf1e2577dd6|3a1ad6491f99d9d4|d13bf8ba4b9a8d00|618823964||t20481.1845031742s|s182b|182|rds|local|vector|||0||

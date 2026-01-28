@@ -4,8 +4,8 @@ library(crew)
 
 # Set target options:
 tar_option_set(
-  packages = c("readxl", "dplyr", "tidyr", "move2", "here", "sf", "purrr"),
-  controller = crew_controller_local(workers = 2)
+  packages = c("readxl", "dplyr", "tidyr", "move2", "here", "sf", "purrr", "lubridate", "vultureUtils", "tidygraph", "ggraph"),
+  controller = crew_controller_local(workers = 10)
 )
 
 # Run the R scripts in the R/ folder with your custom functions:
@@ -77,8 +77,8 @@ list(
   tar_target(dt, 1000),
   tar_target(stl, 4),
   tar_target(idc, "individual_local_identifier"),
-  tar_target(return, "sri"),
-  tar_target(timestampCol, "timestamp_il"),
+  tar_target(r, "sri"),
+  tar_target(tc, "timestamp_il"),
   
   tar_target(sris_2021_3, purrr::map(windows_21_3, ~getEdges_new(dataset = .x, consecThreshold = ct, distThreshold = dt, speedThreshLower = stl, idCol = idc, return = r, timestampCol = tc, roostPolygons = rp))),
   tar_target(sris_2022_3, purrr::map(windows_22_3, ~getEdges_new(dataset = .x, consecThreshold = ct, distThreshold = dt, speedThreshLower = stl, idCol = idc, return = r, timestampCol = tc, roostPolygons = rp))),
@@ -145,5 +145,30 @@ list(
   
   tar_target(metrics_2021_10, map(graphs_2021_10, network_metrics, weight = "sri")),
   tar_target(metrics_2022_10, map(graphs_2022_10, network_metrics, weight = "sri")),
-  # XXX start here transferring over from explore_networks.R
+  
+  tar_target(network_metrics_2021_5, get_network_metrics_df(metrics_2021_5, yr = 2021, dys = 5)),
+  tar_target(network_metrics_2022_5, get_network_metrics_df(metrics_2022_5, yr = 2022, dys = 5)),
+  tar_target(network_metrics_2021_3, get_network_metrics_df(metrics_2021_3, yr = 2021, dys = 3)),
+  tar_target(network_metrics_2022_3, get_network_metrics_df(metrics_2022_3, yr = 2022, dys = 3)),
+  tar_target(network_metrics_2021_10, get_network_metrics_df(metrics_2021_10, yr = 2021, dys = 10)),
+  tar_target(network_metrics_2022_10, get_network_metrics_df(metrics_2022_10, yr = 2022, dys = 10)),
+  
+  tar_target(node_metrics_2021_5, get_node_metrics_df(metrics_2021_5, yr = 2021, dys = 5)),
+  tar_target(node_metrics_2022_5, get_node_metrics_df(metrics_2022_5, yr = 2022, dys = 5)),
+  tar_target(node_metrics_2021_3, get_node_metrics_df(metrics_2021_3, yr = 2021, dys = 3)),
+  tar_target(node_metrics_2022_3, get_node_metrics_df(metrics_2022_3, yr = 2022, dys = 3)),
+  tar_target(node_metrics_2021_10, get_node_metrics_df(metrics_2021_10, yr = 2021, dys = 10)),
+  tar_target(node_metrics_2022_10, get_node_metrics_df(metrics_2022_10, yr = 2022, dys = 10)),
+  
+  tar_target(death_date_2021_min, lubridate::ymd("2021-10-24")),
+  tar_target(death_date_2021_max, lubridate::ymd("2021-10-24")), 
+  tar_target(death_date_2022_min, lubridate::ymd("2022-10-12")),
+  tar_target(death_date_2022_max, lubridate::ymd("2022-10-15")),
+  tar_target(death_df, data.frame(death_min = c(death_date_2021_min, death_date_2022_min),
+                         death_max = c(death_date_2021_max, death_date_2022_max),
+                         year = c(2021, 2022))),
+  
+  tar_target(network_metrics_all, left_join(purrr::list_rbind(list(network_metrics_2021, network_metrics_2022, network_metrics_2021_3, network_metrics_2022_3, network_metrics_2021_10, network_metrics_2022_10)), death_df, by = "year")),
+  
+  tar_target(node_metrics_all, left_join(purrr::list_rbind(list(node_metrics_2021, node_metrics_2022, node_metrics_2021_3, node_metrics_2022_3, node_metrics_2021_10, node_metrics_2022_10)), death_df, by = "year"))
 )

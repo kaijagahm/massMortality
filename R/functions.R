@@ -263,13 +263,8 @@ network_metrics <- function(g, weight = "sri", loops = FALSE) {
     activate(nodes) %>%
     igraph::edge_density(loops = loops)
   
-  assort_degree <- g %>%
-    activate(nodes) %>%
-    assortativity_degree()
-  
-  diameter <- g %>%
-    activate(nodes) %>%
-    graph_diameter(unconnected = T)
+  assort_degree <- igraph::assortativity(g, values = igraph::degree(g))
+  avg_path_length <- igraph::mean_distance(g)
   
   ## ---- Node-level metrics ----
   node_tbl <- g %>%
@@ -283,12 +278,22 @@ network_metrics <- function(g, weight = "sri", loops = FALSE) {
   
   ## ---- Network-level metrics ----
   network_tbl <- tibble(density = density, 
-                        assort_degree = assort_degre,
-                        diameter = diameter) # XXX will need to fix this part
+                        assort_degree = assort_degree,
+                        avg_path_length = avg_path_length) 
   
   ## ---- Output ----
   list(
     network_metrics = network_tbl,
     node_metrics  = node_tbl
   )
+}
+
+get_network_metrics_df <- function(metrics, yr, dys){
+  out <- purrr::list_rbind(map(metrics, "network_metrics"), names_to = "time_period") %>% separate_wider_delim(cols = "time_period", delim = "_", names = c("period_start", "period_end")) %>% mutate(across(starts_with("period_"), lubridate::ymd), year = yr, days = dys)
+  return(out)
+}
+
+get_node_metrics_df <- function(metrics, yr, dys){
+  out <- map_dfr(metrics, "node_metrics", .id = "time_period") %>% separate_wider_delim(cols = "time_period", delim = "_", names = c("period_start", "period_end")) %>% mutate(across(starts_with("period_"), lubridate::ymd), year = yr, days = dys)
+  return(out)
 }
