@@ -158,3 +158,137 @@ downsample_10min <- function(data){
   
   return(downsampled_10min)
 }
+
+# Split gps data into overlapping increments
+split_overlapping <- function(gps, days){
+  start_date <- as.Date(min(gps$timestamp))
+  end_date   <- as.Date(max(gps$timestamp))
+  
+  window_starts <- seq(from = start_date, to   = end_date - days(days-1),  # last full window
+                       by = "1 day")
+  
+  # make list of 5-day windows
+  gps_windows <- purrr::map(
+    window_starts, function(win_start){
+      win_end <- win_start + days(days-1)
+      gps %>% filter(timestamp >= as.POSIXct(win_start) &
+                       timestamp <  as.POSIXct(win_end + days(1)))}
+  )
+  
+  # name list elements with their cutoff dates
+  names(gps_windows) <- map_chr(
+    window_starts,
+    function(win_start) {
+      win_end <- win_start + days(days-1)
+      paste0(
+        format(win_start, "%Y.%m.%d"),
+        "_",
+        format(win_end, "%Y.%m.%d")
+      )
+    }
+  )
+  return(gps_windows)
+}
+
+make_sri_df <- function(mylist){
+  out <- purrr::list_rbind(mylist, names_to = "period") %>% mutate(year = 2021) %>% separate_wider_delim(cols = "period", delim = "_", names = c("period_start", "period_end")) %>% mutate(across(starts_with("period_"), lubridate::ymd))
+  return(out)
+}
+
+get_layout <- function(dfs){
+  all_nodes <- purrr::list_rbind(dfs) %>%
+    select(ID1, ID2) %>%
+    pivot_longer(everything()) %>%
+    distinct(value) %>%
+    rename(name = value)
+  
+  edges_union <- purrr::list_rbind(dfs) %>%
+    filter(sri > 0 & !is.na(sri)) %>%
+    group_by(ID1, ID2) %>%
+    summarise(sri = mean(sri), .groups = "drop")
+  
+  g_union <- tbl_graph(nodes = all_nodes, edges = edges_union, directed = FALSE)
+  
+  g_layout <- g_union %>% activate(edges) %>%
+    mutate(layout_weight = sri)
+  
+  layout_tbl <- create_layout(g_layout, layout  = "fr",
+                              weights = layout_weight)
+  return(layout_tbl)
+}
+
+plot_network_fixed <- function(edges, layout_tbl, title = NULL) {
+  
+  # which nodes are present in THIS network?
+  present_nodes <- unique(c(edges$ID1, edges$ID2))
+  
+  g <- tbl_graph(
+    nodes = layout_tbl %>% select(name),
+    edges = edges %>% filter(sri > 0 & !is.na(sri)),
+    directed = FALSE
+  ) %>%
+    activate(nodes) %>%
+    left_join(layout_tbl, by = "name") %>%
+    mutate(present = name %in% present_nodes)
+  
+  plot <- ggraph(g, layout = "manual", x = x, y = y) +
+    geom_edge_link(aes(alpha = sri)) +
+    
+    ## hide absent nodes
+    geom_node_point(aes(alpha = present), size = 2, show.legend = F) +
+    scale_alpha_manual(values = c("TRUE" = 1, "FALSE" = 0)) +
+    
+    ## hide labels for absent nodes
+    geom_node_text(
+      family = "Arial",
+      aes(label = if_else(present, name, "")),
+      repel = TRUE,
+      size = 3,
+      color = "blue"
+    ) +
+    
+    ggtitle(title)
+  out <- list("graph" = g, "plot" = plot)
+  return(out)
+}
+
+network_metrics <- function(g, weight = "sri", loops = FALSE) {
+  
+  nodes <- c((g %>% activate(edges) %>% filter(sri > 0) %>% pull(from)),
+             (g %>% activate(edges) %>% filter(sri > 0) %>% pull(to))) %>% unique()
+  n <- length(nodes)
+  
+  ## ---- Global metrics ----
+  density <- g %>%
+    activate(nodes) %>%
+    igraph::edge_density(loops = loops)
+  
+  assort_degree <- g %>%
+    activate(nodes) %>%
+    assortativity_degree()
+  
+  diameter <- g %>%
+    activate(nodes) %>%
+    graph_diameter(unconnected = T)
+  
+  ## ---- Node-level metrics ----
+  node_tbl <- g %>%
+    activate(nodes) %>%
+    mutate(degree = centrality_degree(),
+           degree_rel = centrality_degree()/n,
+           strength = centrality_degree(weights = sri),
+           strength_rel = centrality_degree(weights = sri)/n,
+           n = n) %>%
+    as_tibble()
+  
+  ## ---- Network-level metrics ----
+  network_tbl <- tibble(density = density, 
+                        assort_degree = assort_degre,
+                        diameter = diameter) # XXX will need to fix this part
+  
+  ## ---- Output ----
+  list(
+    network_metrics = network_tbl,
+    node_metrics  = node_tbl
+  )
+}
