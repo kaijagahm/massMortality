@@ -122,6 +122,47 @@ list(
                          year = c(2021, 2022))),
   
   tar_target(node_metrics_all, purrr::list_rbind(list(node_metrics_3, node_metrics_5, node_metrics_10))),
-  tar_target(network_metrics_all, purrr::list_rbind(list(network_metrics_3, network_metrics_5, network_metrics_10)))
+  tar_target(network_metrics_all, purrr::list_rbind(list(network_metrics_3, network_metrics_5, network_metrics_10))),
   
+  # Roost networks
+  tar_target(roosts_sris_3, purrr::map(roosts_windows_3, ~getRoostEdges_new(dataset = .x, mode = "distance", distThreshold = 500, idCol = idc, dateCol = "roost_date", roostCol = "roostID", crsToSet = "WGS84", crsToTransform = 32636, return = r, getLocs = F))),
+  
+  tar_target(roosts_sris_5, purrr::map(roosts_windows_5, ~getRoostEdges_new(dataset = .x, mode = "distance", distThreshold = 500, idCol = idc, dateCol = "roost_date", roostCol = "roostID", crsToSet = "WGS84", crsToTransform = 32636, return = r, getLocs = F))),
+  
+  tar_target(roosts_sris_10, purrr::map(roosts_windows_10, ~getRoostEdges_new(dataset = .x, mode = "distance", distThreshold = 500, idCol = idc, dateCol = "roost_date", roostCol = "roostID", crsToSet = "WGS84", crsToTransform = 32636, return = r, getLocs = F))),
+  
+  tar_target(gs_3_roosts, map(roosts_sris_3, ~as_tbl_graph(select(.x, ID1, ID2, sri), directed = F))),
+  tar_target(gs_5_roosts, map(roosts_sris_5, ~as_tbl_graph(select(.x, ID1, ID2, sri), directed = F))),
+  tar_target(gs_10_roosts, map(roosts_sris_10, ~as_tbl_graph(select(.x, ID1, ID2, sri), directed = F))),
+  
+  tar_target(layout_3_roosts, get_layout(roosts_sris_3)),
+  tar_target(layout_5_roosts, get_layout(roosts_sris_5)),
+  tar_target(layout_10_roosts, get_layout(roosts_sris_10)),
+  
+  tar_target(plots_graphs_3_roosts, map2(roosts_sris_3, names(roosts_sris_3), ~plot_network_fixed(.x, layout_3_roosts, title = .y))),
+  tar_target(plots_3_roosts, map(plots_graphs_3_roosts, "plot")),
+  tar_target(graphs_3_roosts, map(plots_graphs_3_roosts, "graph")),
+  
+  tar_target(plots_graphs_5_roosts, map2(roosts_sris_5, names(roosts_sris_5), ~plot_network_fixed(.x, layout_5_roosts, title = .y))),
+  tar_target(plots_5_roosts, map(plots_graphs_5_roosts, "plot")),
+  tar_target(graphs_5_roosts, map(plots_graphs_5_roosts, "graph")),
+  
+  tar_target(plots_graphs_10_roosts, map2(roosts_sris_10, names(roosts_sris_10), ~plot_network_fixed(.x, layout_10_roosts, title = .y))),
+  tar_target(plots_10_roosts, map(plots_graphs_10_roosts, "plot")),
+  tar_target(graphs_10_roosts, map(plots_graphs_10_roosts, "graph")),
+  
+  tar_target(metrics_3_roosts, map(graphs_3_roosts, network_metrics, weight = "sri")),
+  tar_target(metrics_5_roosts, map(graphs_5_roosts, network_metrics, weight = "sri")),
+  tar_target(metrics_10_roosts, map(graphs_10_roosts, network_metrics, weight = "sri")),
+  
+  tar_target(network_metrics_5_roosts, get_network_metrics_df(metrics_5_roosts, dys = 5)),
+  tar_target(network_metrics_3_roosts, get_network_metrics_df(metrics_3_roosts, dys = 3)),
+  tar_target(network_metrics_10_roosts, get_network_metrics_df(metrics_10_roosts, dys = 10)),
+  
+  tar_target(node_metrics_5_roosts, get_node_metrics_df(metrics_5_roosts, dys = 5)),
+  tar_target(node_metrics_3_roosts, get_node_metrics_df(metrics_3_roosts, dys = 3)),
+  tar_target(node_metrics_10_roosts, get_node_metrics_df(metrics_10_roosts, dys = 10)),
+  
+  tar_target(node_metrics_all_roosts, purrr::list_rbind(list(node_metrics_3_roosts, node_metrics_5_roosts, node_metrics_10_roosts))),
+  tar_target(network_metrics_all_roosts, purrr::list_rbind(list(network_metrics_3_roosts, network_metrics_5_roosts, network_metrics_10_roosts)))
 )
