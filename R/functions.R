@@ -161,18 +161,48 @@ downsample_10min <- function(data){
 
 # Split gps data into overlapping increments
 split_overlapping <- function(gps, days){
-  start_date <- as.Date(min(gps$timestamp))
-  end_date   <- as.Date(max(gps$timestamp))
+  start_date <- as.Date(min(gps$timestamp, na.rm = T))
+  end_date   <- as.Date(max(gps$timestamp, na.rm = T))
   
   window_starts <- seq(from = start_date, to   = end_date - days(days-1),  # last full window
                        by = "1 day")
   
-  # make list of 5-day windows
+  # make list of windows
   gps_windows <- purrr::map(
     window_starts, function(win_start){
       win_end <- win_start + days(days-1)
       gps %>% filter(timestamp >= as.POSIXct(win_start) &
                        timestamp <  as.POSIXct(win_end + days(1)))}
+  )
+  
+  # name list elements with their cutoff dates
+  names(gps_windows) <- map_chr(
+    window_starts,
+    function(win_start) {
+      win_end <- win_start + days(days-1)
+      paste0(
+        format(win_start, "%Y.%m.%d"),
+        "_",
+        format(win_end, "%Y.%m.%d")
+      )
+    }
+  )
+  return(gps_windows)
+}
+
+split_overlapping_roosts <- function(roosts, days){
+  start_date <- as.Date(min(roosts$roost_date, na.rm = T))
+  end_date   <- as.Date(max(roosts$roost_date, na.rm = T))
+  
+  window_starts <- seq(from = start_date, to   = end_date - days(days-1),  # last full window
+                       by = "1 day")
+  
+  # make list of windows
+  gps_windows <- purrr::map(
+    window_starts, function(win_start){
+      win_end <- win_start + days(days-1)
+      roosts %>% filter(roost_date >= as.POSIXct(win_start) &
+                       roost_date <  as.POSIXct(win_end + days(1)))}
   )
   
   # name list elements with their cutoff dates
@@ -288,12 +318,12 @@ network_metrics <- function(g, weight = "sri", loops = FALSE) {
   )
 }
 
-get_network_metrics_df <- function(metrics, yr, dys){
-  out <- purrr::list_rbind(map(metrics, "network_metrics"), names_to = "time_period") %>% separate_wider_delim(cols = "time_period", delim = "_", names = c("period_start", "period_end")) %>% mutate(across(starts_with("period_"), lubridate::ymd), year = yr, days = dys)
+get_network_metrics_df <- function(metrics, dys){
+  out <- purrr::list_rbind(map(metrics, "network_metrics"), names_to = "time_period") %>% separate_wider_delim(cols = "time_period", delim = "_", names = c("period_start", "period_end")) %>% mutate(across(starts_with("period_"), lubridate::ymd), days = dys)
   return(out)
 }
 
-get_node_metrics_df <- function(metrics, yr, dys){
-  out <- map_dfr(metrics, "node_metrics", .id = "time_period") %>% separate_wider_delim(cols = "time_period", delim = "_", names = c("period_start", "period_end")) %>% mutate(across(starts_with("period_"), lubridate::ymd), year = yr, days = dys)
+get_node_metrics_df <- function(metrics, dys){
+  out <- map_dfr(metrics, "node_metrics", .id = "time_period") %>% separate_wider_delim(cols = "time_period", delim = "_", names = c("period_start", "period_end")) %>% mutate(across(starts_with("period_"), lubridate::ymd), days = dys)
   return(out)
 }
