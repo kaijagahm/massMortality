@@ -83,6 +83,6 @@ asd_365_roosts <- plot_fun(network_metrics_all_roosts, var = "assort_degree", ax
 apl_365_roosts <- plot_fun(network_metrics_all_roosts, var = "avg_path_length", axis_label = "Avg. path length")
 
 # XXX NEXT STEPS
-# Figure out the names matching
+# Figure out the names matching (eventually, only if we actually need to do analysis)
 # Dig into literature: expected consequences of losing individuals, so we can test
 # Discuss what to do next
