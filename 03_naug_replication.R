@@ -18,7 +18,7 @@ mm_dates_chosen_first <- group_split(group_by(mm_chosen, cluster_eps5min2)) %>%
 mm_dates_chosen_last <- group_split(group_by(mm_chosen, cluster_eps5min2)) %>%
   map_chr(., ~as.character(max(.x$date))) %>% lubridate::ymd()
 
-# Pull GPS data for 2 weeks before and 2 weeks after
+# Pull GPS data for 2 weeks (before first mortality of each cluster) and 2 weeks (after last mortality of each cluster)
 befores_obs <- map(mm_dates_chosen_first, ~{
   downsampled_masked %>%
     filter(date_il >= .x - days(15),
@@ -31,6 +31,38 @@ afters_obs <- map(mm_dates_chosen_last, ~{
            date_il <= .x + days(15))
 })
 
+whodied <- mm_chosen %>% group_by(cluster_eps5min2) %>% group_split() %>% map(., ~.x$id)
+whoislost <- map2(befores_obs, afters_obs, ~{
+  sort(unique(.x$individual_local_identifier))[!(sort(unique(.x$individual_local_identifier)) %in% sort(unique(.y$individual_local_identifier)))]
+}) # did manual comparison of who is lost to who died
+removefrombefore <- list(c("A09w", "J20 White"),
+                         NULL,
+                         NULL,
+                         NULL,
+                         c("A01w", "A33w", "A38w", "A68 White", "C53 Yellow", "E00w", "E01w", "E04w", "E33w", "J15w", "J18w", "J52w", "T56b", "T77w"),
+                         c("A53w", "E10w", "J31w", "J39w", "T54 White"),
+                         NULL,
+                         NULL,
+                         c("A01w", "A39w", "A58w", "E00w", "E01w", "E36w", "E39w", "E82w", "T54 White", "T91b", "Y69>T13W"))
+
+befores_obs <- map2(befores_obs, removefrombefore, ~{
+  .x %>%
+    filter(!(individual_local_identifier %in% .y))
+})
+
+whoisgained <- map2(befores_obs, afters_obs, ~{
+  sort(unique(.y$individual_local_identifier))[!(sort(unique(.y$individual_local_identifier)) %in% sort(unique(.x$individual_local_identifier)))]
+})
+
+removefromafter <- whoisgained
+afters_obs <- map2(afters_obs, removefromafter, ~{
+  .x %>%
+    filter(!(individual_local_identifier %in% .y))
+})
+keepevents <- c(1, 3, 5, 6, 9)
+
+befores_obs <- befores_obs[keepevents]
+afters_obs <- afters_obs[keepevents]
 # Create before/after networks for each
 tar_load(ct)
 tar_load(dt)
@@ -69,6 +101,9 @@ afters_nets_obs_grph <- map(afters_nets_obs, ~{
 # Pull network size for each
 nodes_before_obs <- map_dbl(befores_nets_obs_grph, igraph::gorder)
 nodes_after_obs <- map_dbl(afters_nets_obs_grph, igraph::gorder)
+nodes_before_obs-nodes_after_obs # check that this is equal to the number of indivs who died
+map_dbl(whodied[keepevents], length) # this is the number who are supposed to have died
+# they don't match, but whodied is always higher if anything, which is because some untagged individuals died. That's okay.
 
 # Measure density, avg path length, and clustering coef of all networks and plot vs. network size
 dens_before_obs <- map_dbl(befores_nets_obs_grph, igraph::edge_density)
@@ -79,7 +114,7 @@ cc_before_obs <- map_dbl(befores_nets_obs_grph, igraph::transitivity)
 cc_after_obs <- map_dbl(afters_nets_obs_grph, igraph::transitivity)
 
 graph_stats <- data.frame(type = "obs",
-                          beforeafter = rep(c("before", "after"), each = 9),
+                          beforeafter = rep(c("before", "after"), each = 5),
                           n = c(nodes_before_obs, nodes_after_obs),
                           dens = c(dens_before_obs, dens_after_obs),
                           path_length = c(apl_before_obs, apl_after_obs),
@@ -92,7 +127,7 @@ graph_stats %>%
   geom_smooth(method = "lm")+
   theme_minimal()+
   labs(x = "Graph size", y = "Density")
-summary(lm(dens ~ n*beforeafter, data = graph_stats)) # n.s.
+summary(lm(dens ~ n*beforeafter, data = graph_stats)) # n.s., but a trend. may just need more data points.
 
 ## Path length ~ Network size
 graph_stats %>%
@@ -110,7 +145,7 @@ graph_stats %>%
   geom_smooth(method = "lm")+
   theme_minimal()+
   labs(x = "Graph size", y = "Clustering coefficient")
-summary(lm(cc ~ n*beforeafter, data = graph_stats)) # n.s.
+summary(lm(cc ~ n*beforeafter, data = graph_stats)) # marginally significant
 
 ## no relationship between graph size and any of the structural measures in these nine mortality events.
 
@@ -122,6 +157,10 @@ summary(lm(cc ~ n*beforeafter, data = graph_stats)) # n.s.
 ## "Using the number of nodes and edges specific to each colony, I then constructed random networks with the same densities"
 m_before_obs <- round(dens_before_obs*(nodes_before_obs*(nodes_before_obs-1)/2))
 befores_nets_rand_grph <- map2(nodes_before_obs, m_before_obs, ~play_gnm(n = .x, m = .y, directed = F))
+befores_nets_rand_grph <- map(befores_nets_rand_grph, ~{
+  .x %>% activate(nodes) %>%
+    mutate(node_id = 1:n())
+})
 # ggraph(befores_nets_rand_grph[[2]])+geom_edge_link()+geom_node_point()
 # ggraph(befores_nets_obs_grph[[2]])+geom_edge_link()+geom_node_point()
 
@@ -131,16 +170,73 @@ apl_before_rand <- map_dbl(befores_nets_rand_grph, igraph::mean_distance)
 cc_before_rand <- map_dbl(befores_nets_rand_grph, igraph::transitivity)
 
 # wilcoxon signed rank test path length rand vs. obs before
-wilcox.test(x = apl_before_obs[c(1, 3:9)], y = apl_before_rand[c(1, 3:9)], paired = T, alternative = "two.sided") # n.s.--no difference between path lengths between observed and random pre-removal
+wilcox.test(x = apl_before_obs[1:4], y = apl_before_rand[1:4], paired = T, alternative = "two.sided") # n.s.--no difference between path lengths between observed and random pre-removal
 
 # wilcoxon signed rank test clustering coefficient rand vs. obs before
-wilcox.test(x = cc_before_obs, y = cc_before_rand, paired = T, alternative = "two.sided") # clustering coefficient is significantly different! So far this is the same as what naug found except that we don't have significant relationships between network size and any of the measures, whereas they did.
+wilcox.test(x = cc_before_obs, y = cc_before_rand, paired = T, alternative = "two.sided") # marginally different clustering coefficient--not significant, but close.
 
-# before moving on to the before vs. after, need to do the following
-## 1. go back and don't start the "after" networks until after all removals are completed
-## 2. make sure all other individuals are the same before and after--don't include them if not.
+# Create "after" networks for the random networks by removing the same number of nodes
+n_toremove <- nodes_before_obs-nodes_after_obs # check that this is equal to the number of indivs who died
 
-# wilcoxon density obs before vs. after
-# wilcoxon density rand before vs. after
-# wilcoxon path length obs before vs. after
-# wilcoxon path length rand before vs. after
+set.seed(3)
+to_remove <- map2(n_toremove, befores_nets_rand_grph, ~sample(1:gorder(.y), size = .x, replace = F))
+
+afters_nets_rand_grph <- map2(befores_nets_rand_grph, to_remove, ~{
+  .x %>% activate(nodes) %>%
+    filter(!(node_id %in% .y)) %>%
+    activate(edges) %>%
+    filter(!(from %in% .y) & !(to %in% .y))
+})
+
+dens_after_rand <- map_dbl(afters_nets_rand_grph, igraph::edge_density)
+apl_after_rand <- map_dbl(afters_nets_rand_grph, igraph::mean_distance)
+cc_after_rand <- map_dbl(afters_nets_rand_grph, igraph::transitivity)
+
+nodes_before_rand <- map_dbl(befores_nets_rand_grph, igraph::gorder)
+nodes_after_rand <- map_dbl(afters_nets_rand_grph, igraph::gorder)
+
+graph_stats_rand <- data.frame(type = "rand",
+                          beforeafter = rep(c("before", "after"), each = 5),
+                          n = c(nodes_before_rand, nodes_after_rand),
+                          dens = c(dens_before_rand, dens_after_rand),
+                          path_length = c(apl_before_rand, apl_after_rand),
+                          cc = c(cc_before_rand, cc_after_rand))
+
+graph_stats <- bind_rows(graph_stats, graph_stats_rand)
+
+## Density before/after
+# wilcoxon density obs before vs. after (OBS)
+wilcox.test(x = graph_stats$dens[graph_stats$type == "obs" & graph_stats$beforeafter == "before"], 
+            y = graph_stats$dens[graph_stats$type == "obs" & graph_stats$beforeafter == "after"], 
+            paired = T, alternative = "two.sided") # no change in density after loss (observed networks)
+
+# wilcoxon density rand before vs. after (RAND)
+wilcox.test(x = graph_stats$dens[graph_stats$type == "rand" & graph_stats$beforeafter == "before"], 
+            y = graph_stats$dens[graph_stats$type == "rand" & graph_stats$beforeafter == "after"], 
+            paired = T, alternative = "two.sided") # marginal change in density after loss (random networks). Suggests rewiring?
+
+## Path length before/after
+# wilcoxon path length obs before vs. after (OBS)
+wilcox.test(x = graph_stats$path_length[graph_stats$type == "obs" & graph_stats$beforeafter == "before"], 
+            y = graph_stats$path_length[graph_stats$type == "obs" & graph_stats$beforeafter == "after"], 
+            paired = T, alternative = "two.sided") # n.s.
+
+# wilcoxon path length rand before vs. after (RAND)
+wilcox.test(x = graph_stats$path_length[graph_stats$type == "rand" & graph_stats$beforeafter == "before"], 
+            y = graph_stats$path_length[graph_stats$type == "rand" & graph_stats$beforeafter == "after"], 
+            paired = T, alternative = "two.sided") # aggressively n.s.
+
+## Clustering coefficient before/after
+# wilcoxon path length obs before vs. after (OBS)
+wilcox.test(x = graph_stats$cc[graph_stats$type == "obs" & graph_stats$beforeafter == "before"], 
+            y = graph_stats$cc[graph_stats$type == "obs" & graph_stats$beforeafter == "after"], 
+            paired = T, alternative = "two.sided") # n.s.
+
+# wilcoxon path length rand before vs. after (RAND)
+wilcox.test(x = graph_stats$cc[graph_stats$type == "rand" & graph_stats$beforeafter == "before"], 
+            y = graph_stats$cc[graph_stats$type == "rand" & graph_stats$beforeafter == "after"], 
+            paired = T, alternative = "two.sided") # n.s.
+
+
+# Can't draw any conclusions without more data here. But this provides a potential path forward in comparing before/after with removals
+
