@@ -18,7 +18,7 @@ rp <- st_read("data/raw/roosts50_kde95_cutOffRegion.kml")
 tar_load(downsampled_masked)
 
 # Define period of time for friendships (say: previous 3 months?)
-# yeah sure, let's use 3 months before the mortality event, with a 1-week buffer
+# yeah sure, let's use 1 month before the mortality event, with a 1-week buffer
 death_date <- mm_sub_recent %>% filter(year_cluster_eps5min2 == 4 & year == 2021) %>% pull(date) %>% min()
 end <- death_date - lubridate::days(7)
 begin <- end - lubridate::days(30)
@@ -132,6 +132,11 @@ counts_100_df %>%
   facet_wrap(~pair) +
   geom_vline(data = actuals[actuals$pair %in% six_random,], aes(xintercept = ones), col = "red")
 
+
+# XXX Instead of t test, just do raw numbers--how many permutations are greater than the point estimate?
+# XXX no correction, or less conservative correction (FDR)
+# look through literature on dyads and see how they correct for it.
+# 999 iterations or 1000
 test_results <- map2(counts_100_bypair_list, actuals_bypair_list, ~{
   if(.x$pair[1] != .y$pair[1]){
     stop("pairs not equal")

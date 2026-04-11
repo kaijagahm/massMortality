@@ -327,3 +327,131 @@ get_node_metrics_df <- function(metrics, dys){
   out <- map_dfr(metrics, "node_metrics", .id = "time_period") %>% separate_wider_delim(cols = "time_period", delim = "_", names = c("period_start", "period_end")) %>% mutate(across(starts_with("period_"), lubridate::ymd), days = dys)
   return(out)
 }
+
+get_first_sightings <- function(gps, stmh, gps_spd, ddf, dds, seeds){
+  first_sightings <- gps %>%
+    filter(time_since_carcass >= 0 & time_since_carcass <= stmh) %>%
+    filter((ground_speed > gps_spd & dist_to_carcass <= ddf) |
+             (ground_speed <= gps_spd & dist_to_carcass <= dds)) %>%
+    group_by(individual_local_identifier) %>%
+    arrange(time_since_carcass, timestamp) %>%
+    slice(1) %>%
+    ungroup() %>%
+    arrange(time_since_carcass) %>%
+    filter(!(individual_local_identifier %in% seeds))
+  return(first_sightings)
+}
+
+get_seeds <- function(gps, ddf, dds, gps_spd, time_col, stb_mins){
+  time_window_hrs <- stb_mins/60
+  gps %>%
+    filter(.data[[time_col]] >= -time_window_hrs &
+             .data[[time_col]] <= 0 & 
+             ((ground_speed > gps_spd & dist_to_carcass <= ddf) |
+                (ground_speed <= gps_spd & dist_to_carcass <= dds))) %>%
+    pull(individual_local_identifier) %>%
+    as.character() %>%
+    unique()
+}
+
+get_gps_all <- function(carcs, gps_combined, days_after, days_before){
+  gps_all <- vector(mode = "list", length = length(carcs))
+  for(i in 1:length(carcs)){
+    ic <- carcs[[i]]
+    cid <- ic$carcID[1]
+    carcass_datetime <- ic$datetime[1]
+    out <- gps_combined %>%
+      select(-c("location_long", "location_lat")) %>%
+      filter(timestamp >= (carcass_datetime-days(days_before)) & timestamp <= (carcass_datetime + days(days_after+1))) %>%
+      mutate(dist_to_carcass = as.numeric(st_distance(., ic)),
+             time_since_carcass = difftime(timestamp, carcass_datetime, units = "hours"),
+             carcID = cid)
+    out <- sf::st_as_sf(out, crs = 32636) %>% st_transform("WGS84") %>% bind_cols(st_coordinates(.)) %>%
+      rename("location_long" = X, "location_lat" = Y)
+    gps_all[[i]] <- out
+    cat("done with", i, "\n")
+  }
+  return(gps_all)
+}
+
+get_first_sightings <- function(gps, stmh, gps_spd, ddf, dds, seeds){
+  first_sightings <- gps %>%
+    filter(time_since_carcass >= 0 & time_since_carcass <= stmh) %>%
+    filter((ground_speed > gps_spd & dist_to_carcass <= ddf) |
+             (ground_speed <= gps_spd & dist_to_carcass <= dds)) %>%
+    group_by(individual_local_identifier) %>%
+    arrange(time_since_carcass, timestamp) %>%
+    slice(1) %>%
+    ungroup() %>%
+    arrange(time_since_carcass) %>%
+    filter(!(individual_local_identifier %in% seeds))
+  return(first_sightings)
+}
+
+get_daylight_hours <- function(gps, carc){
+  suntimes <- suncalc::getSunlightTimes(date = sort(unique(gps$date_il)), lat = 31.434306, lon = 34.991889, keep = c("sunrise", "sunset"), tz = "Israel") %>% 
+    dplyr::select("date_il" = date, sunrise, sunset)
+  
+  gps <- dplyr::left_join(gps, suntimes, by = "date_il")
+  gps <- gps %>% dplyr::filter(timestamp_il >= sunrise & timestamp_il <= sunset)
+  
+  night_df <- suntimes %>%
+    dplyr::filter(date_il >= lubridate::date(carc$date)) %>% # only stuff since the carcass
+    dplyr::mutate(prev_sunset = dplyr::lag(sunset),
+                  night_hrs = as.numeric(difftime(sunrise, prev_sunset, units = "hours")),
+                  cumul_night_hrs = cumsum(ifelse(is.na(night_hrs), 0, night_hrs)) + night_hrs*0,
+                  cumul_night_hrs = tidyr::replace_na(cumul_night_hrs, 0))
+  
+  gps <- gps %>%
+    dplyr::left_join(dplyr::select(night_df, date_il, cumul_night_hrs), by = "date_il") %>%
+    dplyr::mutate(daytime_since_carcass = dplyr::case_when(time_since_carcass >= 0 ~ as.numeric(time_since_carcass)-cumul_night_hrs,
+                                                           .default = NA)) %>%
+    dplyr::arrange(timestamp_il)
+  return(gps)
+}
+
+make_shared_layout <- function(graphlist, node_col = "name", layout_fun = igraph::layout_with_fr) {
+  
+  if(!is.null(names(graphlist))){
+    graphnames <- names(graphlist)
+  }else{
+    graphnames <- paste0("graph_", 1:length(graphlist))
+  }
+  
+  # 1. build unified node set
+  all_nodes <- graphlist %>%
+    map(~ .x %>%
+          activate(nodes) %>%
+          as_tibble() %>%
+          select(!!sym(node_col))) %>%
+    bind_rows() %>%
+    distinct()
+  
+  # 2. create empty union graph
+  g_union <- tbl_graph(
+    nodes = all_nodes,
+    edges = tibble(from = integer(), to = integer())
+  )
+  
+  # 3. compute layout once
+  coords <- layout_fun(as.igraph(g_union))
+  
+  layout_tbl <- all_nodes %>%
+    mutate(
+      x = coords[, 1],
+      y = coords[, 2]
+    )
+  
+  # 4. join layout back to each graph
+  graphlist_modified <- graphlist %>%
+    map(~ .x %>%
+          activate(nodes) %>%
+          left_join(layout_tbl, by = node_col))
+  names(graphlist_modified) <- graphnames
+  
+  # 5. return both
+  list(
+    graphlist_modified = graphlist_modified,
+    layout = layout_tbl
+  )
+}

@@ -31,14 +31,14 @@ list(
   tar_target(gps, dplyr::bind_cols(gps_1, setNames(as.data.frame(sf::st_coordinates(gps_1)), c("location_long", "location_lat")))),
   
   tar_target(gps_fixed, fix_names_ages(gps, ww_file_new)),
-
+  
   # Data cleaning -----------------------------------------------------------
   tar_target(ww_new, readxl::read_excel(ww_file_new, sheet = "all gps tags")),
   ## Remove dates before/after the deploy period
   tar_target(removed_deploy, process_deployments(ww_file_new,
-                                                      gps_fixed,
-                                                      default_end_date = as.Date("2026-01-01"),
-                                                      verbose = TRUE)),
+                                                 gps_fixed,
+                                                 default_end_date = as.Date("2026-01-01"),
+                                                 verbose = TRUE)),
   ## Remove hospital/invalid periods (# XXX COME BACK TO THIS)
   # tar_target(removed_periods, remove_periods(ww_file, removed_beforeafter_deploy)),
   ## Clean the data with the various steps in the vultureUtils::cleanData function
@@ -80,7 +80,7 @@ list(
   tar_target(sris_df_3, make_sri_df(sris_3)),
   tar_target(sris_df_5, make_sri_df(sris_5)),
   tar_target(sris_df_10, make_sri_df(sris_10)),
-
+  
   tar_target(gs_3, map(sris_3, ~as_tbl_graph(select(.x, ID1, ID2, sri), directed = F))),
   tar_target(gs_5, map(sris_5, ~as_tbl_graph(select(.x, ID1, ID2, sri), directed = F))),
   tar_target(gs_10, map(sris_10, ~as_tbl_graph(select(.x, ID1, ID2, sri), directed = F))),
@@ -88,7 +88,7 @@ list(
   tar_target(layout_3, get_layout(sris_3)),
   tar_target(layout_5, get_layout(sris_5)),
   tar_target(layout_10, get_layout(sris_10)),
-
+  
   tar_target(plots_graphs_3, map2(sris_3, names(sris_3), ~plot_network_fixed(.x, layout_3, title = .y))),
   tar_target(plots_3, map(plots_graphs_3, "plot")),
   tar_target(graphs_3, map(plots_graphs_3, "graph")),
@@ -104,22 +104,22 @@ list(
   tar_target(metrics_3, map(graphs_3, network_metrics, weight = "sri")),
   tar_target(metrics_5, map(graphs_5, network_metrics, weight = "sri")),
   tar_target(metrics_10, map(graphs_10, network_metrics, weight = "sri")),
-
+  
   tar_target(network_metrics_5, get_network_metrics_df(metrics_5, dys = 5)),
   tar_target(network_metrics_3, get_network_metrics_df(metrics_3, dys = 3)),
   tar_target(network_metrics_10, get_network_metrics_df(metrics_10, dys = 10)),
-
+  
   tar_target(node_metrics_5, get_node_metrics_df(metrics_5, dys = 5)),
   tar_target(node_metrics_3, get_node_metrics_df(metrics_3, dys = 3)),
   tar_target(node_metrics_10, get_node_metrics_df(metrics_10, dys = 10)),
-
+  
   tar_target(death_date_2021_min, lubridate::ymd("2021-10-24")),
   tar_target(death_date_2021_max, lubridate::ymd("2021-10-24")), 
   tar_target(death_date_2022_min, lubridate::ymd("2022-10-12")),
   tar_target(death_date_2022_max, lubridate::ymd("2022-10-15")),
   tar_target(death_df, data.frame(death_min = c(death_date_2021_min, death_date_2022_min),
-                         death_max = c(death_date_2021_max, death_date_2022_max),
-                         year = c(2021, 2022))),
+                                  death_max = c(death_date_2021_max, death_date_2022_max),
+                                  year = c(2021, 2022))),
   
   tar_target(node_metrics_all, purrr::list_rbind(list(node_metrics_3, node_metrics_5, node_metrics_10))),
   tar_target(network_metrics_all, purrr::list_rbind(list(network_metrics_3, network_metrics_5, network_metrics_10))),
@@ -164,5 +164,39 @@ list(
   tar_target(node_metrics_10_roosts, get_node_metrics_df(metrics_10_roosts, dys = 10)),
   
   tar_target(node_metrics_all_roosts, purrr::list_rbind(list(node_metrics_3_roosts, node_metrics_5_roosts, node_metrics_10_roosts))),
-  tar_target(network_metrics_all_roosts, purrr::list_rbind(list(network_metrics_3_roosts, network_metrics_5_roosts, network_metrics_10_roosts)))
+  tar_target(network_metrics_all_roosts, purrr::list_rbind(list(network_metrics_3_roosts, network_metrics_5_roosts, network_metrics_10_roosts))),
+  
+  tar_target(cluster21, filter(mm_sub_recent, year_cluster_eps5min2 == 4 & year == 2021)),
+  tar_target(cluster22, filter(mm_sub_recent, year_cluster_eps5min2 == 2 & year == 2022)),
+  tar_target(monthbefore, c(min(cluster21$date)-lubridate::days(30), min(cluster22$date)-lubridate::days(30))),
+  tar_target(monthafter, c(max(cluster21$date)+lubridate::days(30), max(cluster22$date)+lubridate::days(30))),
+  
+  # Grab carcass data from arrivalatcarcasses project -----------------------
+  tar_target(gps_spd, 4),
+  tar_target(ddf, 4000),
+  tar_target(dds, 1000),
+  tar_target(carcasses_audited, readRDS("data/carcasses_audited.RDS")),
+  tar_target(stn_carcs_21, filter(carcasses_audited, date >= monthbefore[1], date <= monthafter[1])),
+  tar_target(stn_carcs_22, filter(carcasses_audited, date >= monthbefore[2], date <= monthafter[2])),
+  tar_target(days_after, 3),
+  tar_target(dbf, 1),
+  tar_target(stn_carcs_21_list, group_split(group_by(stn_carcs_21, carcID))),
+  tar_target(stn_carcs_22_list, group_split(group_by(stn_carcs_22, carcID))),
+  tar_target(gps_21, get_gps_all(stn_carcs_21_list, downsampled_masked, days_after, dbf)),
+  tar_target(gps_22, get_gps_all(stn_carcs_22_list, downsampled_masked, days_after, dbf)),
+  
+  tar_target(gps_withdaylight_21, purrr::map2(gps_21, stn_carcs_21_list, ~get_daylight_hours(.x, .y))),
+  tar_target(gps_withdaylight_22, purrr::map2(gps_22, stn_carcs_22_list, ~get_daylight_hours(.x, .y))),
+  
+  
+  tar_target(gps_diffusion_21, purrr::map(gps_withdaylight_21, ~dplyr::filter(.x, time_since_carcass >= 0))),
+  tar_target(gps_diffusion_22, purrr::map(gps_withdaylight_22, ~dplyr::filter(.x, time_since_carcass >= 0))),
+  
+  
+  tar_target(seeds_21, map(gps_withdaylight_21, ~{get_seeds(.x, ddf, dds, gps_spd, time_col = "time_since_carcass", stb_mins = 30)})),
+  tar_target(seeds_22, map(gps_withdaylight_22, ~{get_seeds(.x, ddf, dds, gps_spd, time_col = "time_since_carcass", stb_mins = 30)})),
+
+  tar_target(first_sightings_21, purrr::map2(gps_diffusion_21, seeds_21, ~get_first_sightings(.x, 72, gps_spd, ddf, dds, .y))),
+  tar_target(first_sightings_22, purrr::map2(gps_diffusion_22, seeds_22, ~get_first_sightings(.x, 72, gps_spd, ddf, dds, .y)))
 )
+             
