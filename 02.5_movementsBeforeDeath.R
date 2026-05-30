@@ -1,12 +1,20 @@
 # Proof of concept: movement in the two weeks leading up to death ---------
 # 1. Load in data from mvmt soc
+library(here)
+library(targets)
 tar_load(cleaned, store = here("~/Desktop/projects/MvmtSoc/_targets/"))
 cleaned <- cleaned %>% mutate(timestamp_il = lubridate::with_tz(timestamp, tzone = "Israel"),
                               date_il = lubridate::date(timestamp_il))
 
+tar_load(deaths)
+deaths_simple <- deaths %>%
+  select(Nili_id, date_death, death_kg, death_kg_detail) %>%
+  distinct() %>%
+  arrange(date_death)
+
 # 2. Restrict deaths to vultures that died within the bounds of that dataset
-mindate <- min(cleaned$date_il)
-maxdate <- max(cleaned$date_il)
+mindate <- min(cleaned$date_il,  na.rm = T)
+maxdate <- max(cleaned$date_il, na.rm = T)
 focal_deaths <- deaths_simple %>%
   mutate(date_death = lubridate::ymd(date_death)) %>%
   filter(date_death > mindate + days(30),
