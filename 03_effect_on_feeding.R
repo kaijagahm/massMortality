@@ -20,6 +20,8 @@ tar_load(stn_carcs_21_list)
 tar_load(stn_carcs_22_list)
 length(stn_carcs_21_list)
 length(stn_carcs_22_list)
+tar_load(gps_21)
+tar_load(gps_22)
 # cool! very similar number of station carcasses
 
 tar_load(first_sightings_21)
@@ -39,8 +41,13 @@ fs22 <- purrr::list_rbind(first_sightings_22) %>%
   group_by(carcID) %>%
   mutate(idx = 1:n())
 
+# Number of tracked vultures in each
+ntracked_21 <- map(gps_21, ~data.frame(carcID = .x$carcID[1], n_total_tracked = length(unique(.x$individual_local_identifier)))) %>% purrr::list_rbind()
+ntracked_22 <- map(gps_22, ~data.frame(carcID = .x$carcID[1], n_total_tracked = length(unique(.x$individual_local_identifier)))) %>% purrr::list_rbind()
+
 # Look at the acquisition curves
-fs <- bind_rows(mutate(fs21, year = 2021), mutate(fs22, year = 2022))
+fs <- bind_rows(mutate(fs21, year = 2021), mutate(fs22, year = 2022)) %>%
+  left_join(bind_rows(ntracked_21, ntracked_22))
 fs %>%
   ggplot(aes(x = daytime_since_carcass, y = idx, group = carcID, color = beforeafter))+
   geom_line()+
@@ -55,58 +62,79 @@ fs %>%
 
 # Ways to measure curves
 # Time to first arrival
-# Time to 50% of arrivals
+# # vultures at 50% time (approx. 20 daylight hours, though it varies... how do we make this the same?)
+# Time to 25% of tagged vultures having seen the carcass
 # Vultures per hour of daylight
 
 summ <- fs %>%
   group_by(carcID, year, beforeafter) %>%
   summarize(hrs_to_first = min(daytime_since_carcass),
-            hrs_to_median = daytime_since_carcass[idx = median(idx)],
-            vultures_per_hr = max(idx)/max(as.numeric(daytime_since_carcass))) %>%
-  mutate(carcass = case_when(year == 2021 ~ "Carcass 1",
-                             year == 2022 ~ "Carcass 2"))
+            vultures_at_20hrs = min(idx[daytime_since_carcass >= 20], na.rm = T),
+            vultures_per_hr = max(idx)/max(as.numeric(daytime_since_carcass)),
+            total_tracked = n_total_tracked[1],
+            final_vultures = max(idx),
+            time_to_25pct = min(daytime_since_carcass[idx >= n_total_tracked/4])) %>%
+  mutate(mortality_event = case_when(year == 2021 ~ "Mortality event 1",
+                             year == 2022 ~ "Mortality event 2")) %>%
+  mutate(across(c("vultures_at_20hrs", "time_to_25pct"), ~replace(.x, is.infinite(.x), NA)))
 
 a <- summ %>%
   filter(beforeafter %in% c("before", "after")) %>%
-  ggplot(aes(x = carcass, y = hrs_to_first, fill = beforeafter, group = interaction(carcass, beforeafter)))+
+  ggplot(aes(x = mortality_event, y = hrs_to_first, fill = beforeafter, group = interaction(mortality_event, beforeafter)))+
   geom_boxplot(outlier.shape = NA)+
-  geom_point(aes(group = interaction(carcass, beforeafter)),
+  geom_point(aes(group = interaction(mortality_event, beforeafter)),
              position=position_jitterdodge(jitter.width = 0.3),
              pch = 1,alpha = 0.5, size = 2)+
   scale_fill_manual(values = c("lightblue", "skyblue3"))+
   theme_minimal()+
   theme(legend.position = "none")+
-  labs(x = "Carcass",
+  labs(x = "Mortality event",
        y = "Hours to first detection",
        fill = NULL)
+
 b <- summ %>%
   filter(beforeafter %in% c("before", "after")) %>%
-  ggplot(aes(x = carcass, y = hrs_to_median, fill = beforeafter, group = interaction(carcass, beforeafter)))+
+  ggplot(aes(x = mortality_event, y = vultures_at_20hrs, fill = beforeafter, group = interaction(mortality_event, beforeafter)))+
   geom_boxplot(outlier.shape = NA)+
-  geom_point(aes(group = interaction(carcass, beforeafter)),
+  geom_point(aes(group = interaction(mortality_event, beforeafter)),
              position=position_jitterdodge(jitter.width = 0.3),
              pch = 1,alpha = 0.5, size = 2)+
   scale_fill_manual(values = c("lightblue", "skyblue3"))+
   theme_minimal()+
   theme(legend.position = "none")+
-  labs(x = "Carcass",
-       y = "Hours to median detection",
+  labs(x = "Mortality event",
+       y = "Vultures after 20hrs",
        fill = NULL)
 c <- summ %>%
   filter(beforeafter %in% c("before", "after")) %>%
-  ggplot(aes(x = carcass, y = vultures_per_hr, fill = beforeafter, group = interaction(carcass, beforeafter)))+
+  ggplot(aes(x = mortality_event, y = vultures_per_hr, fill = beforeafter, group = interaction(mortality_event, beforeafter)))+
   geom_boxplot(outlier.shape = NA)+
-  geom_point(aes(group = interaction(carcass, beforeafter)),
+  geom_point(aes(group = interaction(mortality_event, beforeafter)),
              position=position_jitterdodge(jitter.width = 0.4),
              pch = 1,alpha = 0.5)+
   scale_fill_manual(values = c("lightblue", "skyblue3"))+
   theme_minimal()+
   theme(legend.position = "none")+
-  labs(x = "Carcass",
+  labs(x = "Mortality event",
        y = "Vultures per hour",
        fill = NULL)
 
-(a+b+c+plot_layout(axis_titles = "collect"))+plot_annotation(title = "Before/after mortality events", subtitle = "Two example mass mortality events", caption = "Light blue = 1 month before\nDark blue = 1 month after")
+d <- summ %>%
+  filter(beforeafter %in% c("before", "after")) %>%
+  ggplot(aes(x = mortality_event, y = time_to_25pct, fill = beforeafter, group = interaction(mortality_event, beforeafter)))+
+  geom_boxplot(outlier.shape = NA)+
+  geom_point(aes(group = interaction(mortality_event, beforeafter)),
+             position=position_jitterdodge(jitter.width = 0.4),
+             pch = 1,alpha = 0.5)+
+  scale_fill_manual(values = c("lightblue", "skyblue3"))+
+  theme_minimal()+
+  theme(legend.position = "none")+
+  labs(x = "Mortality event",
+       y = "Time to 25% tracked vultures",
+       caption = "Includes only carcasses that reached 25% of tracked vultures",
+       fill = NULL)
+
+(a+b+c+d+plot_layout(axis_titles = "collect"))+plot_annotation(title = "Before/after mortality events", subtitle = "Two example mass mortality events", caption = "Light blue = 1 month before\nDark blue = 1 month after")
 
 
 # Covariates to incorporate:
