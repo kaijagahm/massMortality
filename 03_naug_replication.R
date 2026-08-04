@@ -294,6 +294,8 @@ beforeafter_pairs <- function(before, after){
   return(a+b)
 }
 
+# XXX need to plot the random ones, and indicate which ones "died" too.
+
 plots <- map2(map(graphs_shared_layouts_obs, 1), map(graphs_shared_layouts_obs, 2), beforeafter_pairs)
 
 # Higher SRI cutoff shows a little bit more variation. Still want to try roosting networks, though.
