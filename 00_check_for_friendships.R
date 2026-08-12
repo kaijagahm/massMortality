@@ -8,6 +8,14 @@ library(furrr)
 library(changepoint)
 source("R/getEdges_new_2026-02-01.R")
 
+tar_load(ct)
+tar_load(dt)
+tar_load(stl)
+tar_load(idc)
+tar_load(r)
+tar_load(tc)
+tar_load(rp)
+
 # tar_load(windows_10)
 # touse <- windows_10[200:300]
 # write_rds(touse, file = "data/created/touse.RDS")
@@ -188,7 +196,7 @@ zscores_over_time %>%
   theme(text = element_text(size = 18))
   # Almost all dyads interact significantly more often than expected by chance.
 
-# 2. Raw (observed) SRI values don't appear to show much differentiation between different dyad relationships
+# 2. For a given time period, there's quite a bit of differentiation between dyads (raw SRI values)
 raw <- purrr::list_rbind(sris_10_touse[10:19], names_to = "period") %>%
   mutate(period_idx = factor(as.numeric(as.factor(period))))
 
@@ -207,6 +215,7 @@ friends_ranked_obs %>%
   labs(y = "Raw SRI (flight)",
        x = "Rank")
 
+# 2. Raw SRI values are not particularly consistent over time.
 friends_ranked_obs %>%
   arrange(pair, period_idx) %>%
   group_by(pair) %>%
@@ -222,6 +231,24 @@ friends_ranked_obs %>%
        color = "Initial SRI rank")+
   theme(text = element_text(size = 18))
 
+set.seed(3)
+friends_ranked_obs %>%
+  filter(pair %in% sample(unique(friends_ranked_obs$pair), 15)) %>%
+  arrange(pair, period_idx) %>%
+  group_by(pair) %>%
+  mutate(col = sri[1]) %>%
+  ungroup() %>%
+  mutate(init_sri_rank = as.numeric(as.factor(col))) %>%
+  ggplot(aes(x = period_idx, y = sri, group = pair))+
+  geom_line(alpha = 0.7, aes(color = init_sri_rank), linewidth = 1.5)+
+  theme_minimal()+
+  scale_color_viridis_c(option = 2)+
+  labs(y = "Raw SRI (flight)",
+       x = "2-week period",
+       color = "Initial SRI rank")+
+  theme(text = element_text(size = 18))
+
+# 2. Raw SRI ranks are also not particularly consistent over time.
 friends_ranked_obs %>%
   arrange(pair, period_idx) %>%
   group_by(pair) %>%
@@ -237,152 +264,144 @@ friends_ranked_obs %>%
        color = "Initial dyad rank")+
   theme(text = element_text(size = 18))
 
-# 2. After accounting for space, non-incidental z-scores show more differentiation between relationships
+set.seed(3)
+friends_ranked_obs %>%
+  filter(pair %in% sample(unique(friends_ranked_obs$pair), 15)) %>%
+  arrange(pair, period_idx) %>%
+  group_by(pair) %>%
+  mutate(col = rank[1]) %>%
+  ungroup() %>%
+  mutate(init_rank_rank = as.numeric(as.factor(col))) %>%
+  ggplot(aes(x = period_idx, y = rank, group = pair))+
+  geom_line(alpha = 0.7, aes(color = init_rank_rank), linewidth = 1.5)+
+  theme_minimal()+
+  scale_color_viridis_c(option = 2)+
+  labs(y = "Dyad rank (raw flight SRI)",
+       x = "2-week period",
+       color = "Initial dyad rank")+
+  theme(text = element_text(size = 18))
+
+# 2. After accounting for space, non-incidental z-scores still show differentiation between relationships
 friends_ranked_over_time %>%
   mutate(period_idx = as.factor(as.numeric(as.factor(period)))) %>%
   filter(!is.infinite(z) & !is.na(z) & !is.nan(z)) %>%
   filter(period_idx == 1) %>%
-  ggplot(aes(x = rank, y = z, group = pair))+
-  geom_line() # XXX SOMETHING IS WRONG HERE
-
-
-
-# trying two different shift parameters
-# wrapped_sm2 <- purrr::map(1:n, ~rotate_data_table(dataset = test, shiftMax = 2, idCol = "individual_local_identifier", dateCol = "date_il", timeCol = "time"), .progress = T)
-# wrapped_sm1 <- purrr::map(1:n, ~rotate_data_table(dataset = test, shiftMax = 1, idCol = "individual_local_identifier", dateCol = "date_il", timeCol = "time"), .progress = T)
-
-# write_rds(wrapped_sm2, file = "data/created/wrapped_sm2.RDS")
-wrapped_sm2 <- readRDS("data/created/wrapped_sm2.RDS")
-
-# write_rds(wrapped_sm1, file = "data/created/wrapped_sm1.RDS")
-wrapped_sm1 <- readRDS("data/created/wrapped_sm1.RDS")
-
-# Create networks for each of those with SRI
-tar_load(ct)
-tar_load(dt)
-tar_load(stl)
-tar_load(idc)
-tar_load(r)
-tar_load(tc)
-tar_load(rp)
-
-#future::plan(multisession, workers = 10)
-
-# sris_wrapped_sm2 <- furrr::future_map(wrapped_sm2, ~getEdges_new(dataset = .x, consecThreshold = ct, distThreshold = dt, speedThreshLower = stl, idCol = idc, return = r, timestampCol = "newdatetime", roostPolygons = rp))
-# write_rds(sris_wrapped_sm2, file = "data/created/sris_wrapped_sm2.RDS")
-sris_wrapped_sm2 <- readRDS("data/created/sris_wrapped_sm2.RDS")
-
-# sris_wrapped_sm1 <- furrr::future_map(wrapped_sm1, ~getEdges_new(dataset = .x, consecThreshold = ct, distThreshold = dt, speedThreshLower = stl, idCol = idc, return = r, timestampCol = "newdatetime", roostPolygons = rp))
-# write_rds(sris_wrapped_sm1, file = "data/created/sris_wrapped_sm1.RDS")
-sris_wrapped_sm1 <- readRDS("data/created/sris_wrapped_sm1.RDS")
-
-# Join shuffled to observed SRI values
-sris_df_wrapped_sm2 <- purrr::list_rbind(sris_wrapped_sm2, names_to = "iter")
-sris_df_wrapped_sm1 <- purrr::list_rbind(sris_wrapped_sm1, names_to = "iter")
-
-# Visualize
-obs <- sris_10_touse[[10]] %>%
-  rename("sri_obs" = sri)
-
-joined_sm2 <- sris_df_wrapped_sm2 %>%
-  left_join(obs, by = c("ID1", "ID2", "pair"))
-joined_sm1 <- sris_df_wrapped_sm1 %>%
-  left_join(obs, by = c("ID1", "ID2", "pair"))
-
-zscores_sm2 <- joined_sm2 %>%
-  group_by(ID1, ID2, pair) %>%
-  summarize(z = (sri_obs[1]-mean(sri, na.rm = T))/sd(sri, na.rm = T),
-            p = mean(sri > sri_obs)) %>%
-  mutate(z = case_when(is.infinite(z)|is.nan(z)|is.na(z) ~ 0, .default = z)) # hmm. here they all seem to be exceeding expected, which is surprising.
-
-zscores_sm1 <- joined_sm1 %>%
-  group_by(ID1, ID2, pair) %>%
-  summarize(z = (sri_obs[1]-mean(sri, na.rm = T))/sd(sri, na.rm = T),
-            p = mean(sri > sri_obs)) %>%
-  mutate(z = case_when(is.infinite(z)|is.nan(z)|is.na(z) ~ 0, .default = z))
-
-zscores_backwards_sm2 <- zscores_sm2 %>% rename("ID1" = ID2, "ID2" = ID1)
-zscores_backwards_sm1 <- zscores_sm1 %>% rename("ID1" = ID2, "ID2" = ID1)
-
-zscores_doubled_sm2 <- bind_rows(zscores_sm2, zscores_backwards_sm2) # now we have all dyads backwards and forwards.
-zscores_doubled_sm1 <- bind_rows(zscores_sm1, zscores_backwards_sm1)
-
-friends_ranked_zscores_sm2 <- zscores_doubled_sm2 %>%
-  group_by(ID1) %>%
-  arrange(desc(z)) %>%
-  mutate(rank = 1:n()) %>%
-  ungroup()
-
-friends_ranked_zscores_sm1 <- zscores_doubled_sm1 %>%
-  group_by(ID1) %>%
-  arrange(desc(z)) %>%
-  mutate(rank = 1:n()) %>%
-  ungroup()
-
-friends_ranked_zscores_sm2 %>%
   ggplot(aes(x = rank, y = z, group = ID1))+
-  geom_line(alpha = 0.2)+
-  theme_classic()+
-  ggtitle("shiftMax 2")# looks like after accounting for z-score, we do have some relationships that are stronger than others!
+  geom_line(alpha = 0.4)+
+  theme_minimal()+
+  theme(text = element_text(size = 18))+
+  labs(y = "Z-score (flight)",
+       x = "Rank")
 
-friends_ranked_zscores_sm1 %>%
-  ggplot(aes(x = rank, y = z, group = ID1))+
-  geom_line(alpha = 0.2)+
-  theme_classic()+
-  ggtitle("shiftMax 1") # looks qualitatively similar.
-
-mylist_sm2 <- friends_ranked_zscores_sm2 %>%
-  arrange(ID1) %>%
-  group_by(ID1) %>%
-  group_split()
-ids_sm2 <- map_chr(mylist_sm2, ~.x$ID1[1])
-
-mylist_sm1 <- friends_ranked_zscores_sm1 %>%
-  arrange(ID1) %>%
-  group_by(ID1) %>%
-  group_split()
-ids_sm1 <- map_chr(mylist_sm1, ~.x$ID1[1])
-
-# Changepoint analysis: z-scores
-## By mean
-cpts_mean_sm2 <- map(mylist_sm2, ~cpt.mean(.x$z))
-n.cpts_mean_sm2 <- map_dbl(cpts_mean_sm2, ~length(.x@cpts))
-idx.cpts_mean_sm2 <- map(cpts_mean_sm2, ~.x@cpts)
-names(idx.cpts_mean_sm2) <- ids_sm2
-cpts_df_sm2 <- purrr::list_rbind(map(idx.cpts_mean_sm2, ~data.frame("cpt_idx" = .x)), names_to = "ID1")
-hist(n.cpts_mean_sm2)
-cpts_df_sm2 %>%
-  ggplot(aes(x = cpt_idx))+
-  geom_histogram() # no particularly clear pattern as to where the splits happen.
-
-cpts_mean_sm1 <- map(mylist_sm1, ~cpt.mean(.x$z))
-n.cpts_mean_sm1 <- map_dbl(cpts_mean_sm1, ~length(.x@cpts))
-idx.cpts_mean_sm1 <- map(cpts_mean_sm1, ~.x@cpts)
-names(idx.cpts_mean_sm1) <- ids_sm1
-cpts_df_sm1 <- purrr::list_rbind(map(idx.cpts_mean_sm1, ~data.frame("cpt_idx" = .x)), names_to = "ID1")
-hist(n.cpts_mean_sm1)
-cpts_df_sm1 %>%
-  ggplot(aes(x = cpt_idx))+
-  geom_histogram() #very similar to sm2.
-
-# I wonder how this compares to the changepoints in the observed data?
-obs_ranked_list <- friends_ranked_test %>%
-  mutate(sri = case_when(is.na(sri)|is.nan(sri)|is.infinite(sri) ~ 0, .default = sri)) %>%
+# 3. Dyad z-scores are not particularly consistent over time.
+friends_ranked_over_time %>%
+  filter(!is.na(z) & !is.infinite(z) & !is.nan(z)) %>%
+  mutate(period_idx = as.factor(as.numeric(as.factor(period)))) %>%
+  arrange(pair, period_idx) %>%
+  group_by(pair) %>%
+  mutate(col = z[1]) %>%
   ungroup() %>%
-  arrange(ID1) %>%
-  group_by(ID1) %>%
-  group_split()
-ids_obs <- map_chr(obs_ranked_list, ~.x$ID1[1])
+  mutate(init_z_rank = as.numeric(as.factor(col))) %>%
+  ggplot(aes(x = period_idx, y = z, group = pair))+
+  geom_line(alpha = 0.2, aes(color = init_z_rank), linewidth = 1)+
+  theme_minimal()+
+  scale_color_viridis_c(option = 2)+
+  labs(y = "Dyad z-score",
+       x = "2-week period",
+       color = "Initial dyad z-score")+
+  theme(text = element_text(size = 18))
 
-scaled <- map(obs_ranked_list, ~replace_na(scale(.x$sri)[,1], 0))
-cpts_mean_obs <- map(scaled, ~cpt.mean(.x))
-n.cpts_mean_obs <- map_dbl(cpts_mean_obs, ~length(.x@cpts))
-idx.cpts_mean_obs <- map(cpts_mean_obs, ~.x@cpts)
-names(idx.cpts_mean_obs) <- ids_obs
-cpts_df_obs <- purrr::list_rbind(map(idx.cpts_mean_obs, ~data.frame("cpt_idx" = .x)), names_to = "ID1")
-hist(n.cpts_mean_obs)
-cpts_df_obs %>%
-  ggplot(aes(x = cpt_idx))+
-  geom_histogram() # this distribution looks pretty different!
+set.seed(3)
+friends_ranked_over_time %>%
+  filter(!is.na(z) & !is.infinite(z) & !is.nan(z)) %>%
+  mutate(period_idx = as.factor(as.numeric(as.factor(period)))) %>%
+  filter(pair %in% sample(unique(.$pair), 15)) %>%
+  arrange(pair, period_idx) %>%
+  group_by(pair) %>%
+  mutate(col = z[1]) %>%
+  ungroup() %>%
+  mutate(init_z_rank = as.numeric(as.factor(col))) %>%
+  ggplot(aes(x = period_idx, y = z, group = pair))+
+  geom_line(alpha = 0.7, aes(color = init_z_rank), linewidth = 1.5)+
+  theme_minimal()+
+  scale_color_viridis_c(option = 2)+
+  labs(y = "Dyad z-score",
+       x = "2-week period",
+       color = "Initial dyad z-score")+
+  theme(text = element_text(size = 18))
 
-# Clearly, the shuffling is having an effect when it comes to the distribution of friendships.
+# 3. Dyad ranks are not particularly consistent over time.
+friends_ranked_over_time %>%
+  filter(ID1 < ID2) %>%
+  filter(!is.na(z) & !is.infinite(z) & !is.nan(z)) %>%
+  mutate(period_idx = as.factor(as.numeric(as.factor(period)))) %>%
+  arrange(pair, period_idx) %>%
+  group_by(pair) %>%
+  mutate(col = rank[1]) %>%
+  ungroup() %>%
+  mutate(init_rank_rank = as.numeric(as.factor(col))) %>%
+  ggplot(aes(x = period_idx, y = rank, group = pair))+
+  geom_line(alpha = 0.2, aes(color = init_rank_rank), linewidth = 1)+
+  theme_minimal()+
+  scale_color_viridis_c(option = 2)+
+  labs(y = "Dyad rank",
+       x = "2-week period",
+       color = "Initial dyad rank")+
+  theme(text = element_text(size = 18))
+
+set.seed(3)
+friends_ranked_over_time %>%
+  filter(ID1 < ID2) %>%
+  filter(!is.na(z) & !is.infinite(z) & !is.nan(z)) %>%
+  mutate(period_idx = as.factor(as.numeric(as.factor(period)))) %>%
+  filter(pair %in% sample(unique(.$pair), 15)) %>%
+  arrange(pair, period_idx) %>%
+  group_by(pair) %>%
+  mutate(col = rank[1]) %>%
+  ungroup() %>%
+  mutate(init_rank_rank = as.numeric(as.factor(col))) %>%
+  ggplot(aes(x = period_idx, y = rank, group = pair))+
+  geom_line(alpha = 0.7, aes(color = init_rank_rank), linewidth = 1.5)+
+  theme_minimal()+
+  scale_color_viridis_c(option = 2)+
+  labs(y = "Dyad rank",
+       x = "2-week period",
+       color = "Initial dyad rank")+
+  theme(text = element_text(size = 18))
+
+# Can we measure repeatability of these things?
+## See the methods document for some ideas on how people have measured the stability of ranks/dyad strengths. It seems to vary a lot and nobody has really figured out a definitive measure.
+## Let's try coefficient of variation (standard deviation/mean)
+
+friends_ranked_obs %>%
+  group_by(pair) %>%
+  mutate(cv_sri = sd(sri)/mean(sri),
+            cv_rank = sd(rank)/mean(rank)) %>%
+  ggplot(aes(x = period_idx, y = sri, color = cv_sri, group = pair))+
+  geom_line()+
+  theme_minimal()+
+  scale_color_viridis_c(option =2)
+
+library(rptR)
+
+## Observed
+totest <- friends_ranked_obs %>% filter(!is.na(sri) & !is.nan(sri) & !is.infinite(sri))
+rpt_obs_sri <- rpt(sri ~ (1 | pair), grname = "pair", data = totest, datatype = "Gaussian",
+    nboot = 100, npermut = 0)
+summary(rpt_obs_sri) # okay wait actually the repeatability for observed sri is quite high! 0.767 (0.747, 0.785)
+
+rpt_obs_rank <- rpt(rank ~ (1 | pair), grname = "pair", data = totest, datatype = "Gaussian",
+                    nboot = 100, npermut = 0)
+summary(rpt_obs_rank) # repeatability of observed rank is 0.78 (0.763, 0.793)
+
+# We can also look at multiple factors, allegedly
+rpt_obs_sri_indiv.dyad <- rpt(sri ~ (1 | pair) + (1 | ID1), grname = c("pair", "ID1"),
+            data = totest, datatype = "Gaussian", nboot = 0, npermut = 0)
+summary(rpt_obs_sri_indiv.dyad) # this shows the pair and a single individual--which is interesting but probably not statistically sound. Would also need to add the other individual.
+
+### XXX start here with calculating repeatability for the other measures!
+
+## Z-scores
+totest_z <- friends_ranked_over_time %>%
+  filter(ID1 < ID2) %>%
+  filter(!is.na(z), !is.infinite(z), !is.nan(z))
