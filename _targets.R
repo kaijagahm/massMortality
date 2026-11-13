@@ -23,8 +23,8 @@ list(
   tar_target(ww, get_ww(ww_file, date_cols = c("deploy_on_date", "deploy_off_date", "date_death"))),
   tar_target(deaths, get_deaths(ww, min_date, max_date)),
   tar_target(mm, readxl::read_excel("data/raw/M&m_new_2010_2024 (1).xlsx", sheet = 1)),
-  tar_target(inpa_data, mutate(readRDS(here("data/created/download_gps_data/inpa_data_version2026-01-29.RDS")), source = "inpa")),
-  tar_target(ornitela_data, mutate(readRDS(here("data/created/download_gps_data/ornitela_data_version2026-01-29.RDS")), source = "ornitela")),
+  tar_target(inpa_data, mutate(readRDS(here("data/created/download_gps_data/inpa_data_version2026-11-06.RDS")), source = "inpa")),
+  tar_target(ornitela_data, mutate(readRDS(here("data/created/download_gps_data/ornitela_data_version2026-11-06.RDS")), source = "ornitela")),
   
   tar_target(gps_1, sf::st_as_sf(bind_rows(as.data.frame(ornitela_data), as.data.frame(inpa_data)), crs = "WGS84")),
   
